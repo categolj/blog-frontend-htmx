@@ -1,0 +1,51 @@
+{{<layouts/default}}
+{{$content}}
+<section class="note-auth">
+  <h1 class="hero-title">Login</h1>
+
+  <div class="note-info" role="note">
+    <p>当システムに登録済みのEmailアドレスとパスワードを入力し、ログインして下さい。</p>
+    <p>
+      <strong>note.comのアカウントではありません</strong>。
+      &quot;はじめるSpring Boot 3&quot;を読むには、
+      <a href="https://note.com/makingx/m/m2dc6f318899c" target="_blank" rel="noopener noreferrer">note.com</a>
+      でノートまたはマガジン購入した上で、note.comとは別に当システムにアカウントを作成する必要があります。
+    </p>
+    <p>未登録の場合は<a href="/note/signup">こちら</a>から登録してください。</p>
+  </div>
+
+  {{#loginError}}
+  <div class="note-alert note-alert-error" role="alert">
+    メールアドレスまたはパスワードが正しくありません。
+  </div>
+  {{/loginError}}
+  {{#loggedOut}}
+  <div class="note-alert note-alert-info" role="status">
+    ログアウトしました。
+  </div>
+  {{/loggedOut}}
+  {{#passwordReset}}
+  <div class="note-alert note-alert-success" role="status">
+    パスワードを再設定しました。新しいパスワードでログインしてください。
+  </div>
+  {{/passwordReset}}
+
+  <form class="note-login-form" method="post" action="/note/login" hx-boost="false">
+    <input type="hidden" name="{{_csrf.parameterName}}" value="{{_csrf.token}}">
+    <div class="note-field">
+      <label for="username">Email</label>
+      <input id="username" name="username" type="email" autocomplete="email" required>
+    </div>
+    <div class="note-field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+    </div>
+    <button type="submit" class="note-submit">Login</button>
+  </form>
+
+  <p class="note-auth-foot">
+    パスワードを忘れた方は <a href="/note/password_reset/send_link">こちら</a> からリセットできます。
+  </p>
+</section>
+{{/content}}
+{{/layouts/default}}

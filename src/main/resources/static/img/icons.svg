@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute">
+  <symbol id="folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+  </symbol>
+  <symbol id="tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+    <line x1="7" y1="7" x2="7.01" y2="7"/>
+  </symbol>
+  <symbol id="search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="7"/>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </symbol>
+  <symbol id="calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+    <line x1="16" y1="2" x2="16" y2="6"/>
+    <line x1="8" y1="2" x2="8" y2="6"/>
+    <line x1="3" y1="10" x2="21" y2="10"/>
+  </symbol>
+  <symbol id="pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 20h9"/>
+    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+  </symbol>
+  <symbol id="eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </symbol>
+  <symbol id="globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M2 12h20"/>
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+  </symbol>
+  <symbol id="globe-thin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M2 12h20"/>
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+  </symbol>
+  <symbol id="hamburger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 7h16M4 12h16M4 17h16"/>
+  </symbol>
+  <symbol id="theme-system" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="3" width="20" height="14" rx="2"/>
+    <path d="M8 21h8M12 17v4"/>
+  </symbol>
+  <symbol id="theme-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="4"/>
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+  </symbol>
+  <symbol id="theme-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </symbol>
+  <symbol id="arrow-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 19V5M5 12l7-7 7 7"/>
+  </symbol>
+  <symbol id="share-x" viewBox="0 0 240 240" fill="currentColor">
+    <path d="M88.2 60.66L169.46 178.81h-18.04L70.16 60.66h18.04zM92.93 51.66H53.04l93.64 136.15h39.89L92.93 51.66z"/>
+    <path d="M132.54 109.25l49.7-57.59h-11.25l-43.44 50.33 4.99 7.26zM105.36 127.72L53.04 188.34H64.3l46.05-53.36-4.99-7.26z"/>
+  </symbol>
+  <symbol id="share-bluesky" viewBox="0 0 256 256" fill="currentColor">
+    <path d="M 60.9 37.7 C 88.1 58.1 117.3 99.5 128 121.7 C 138.7 99.5 167.9 58.1 195.1 37.7 C 214.7 23 246.5 11.7 246.5 47.9 C 246.5 55.1 242.3 108.6 239.9 117.3 C 231.4 147.6 200.6 155.3 173.2 150.6 C 221.1 158.8 233.3 185.8 207 212.8 C 157 264.1 135.1 199.9 129.5 183.5 C 128.5 180.4 128 179 128 180.2 C 128 179 127.5 180.4 126.5 183.5 C 120.9 199.9 99 264.1 49 212.8 C 22.7 185.8 34.9 158.8 82.8 150.6 C 55.4 155.3 24.6 147.6 16.1 117.3 C 13.7 108.6 9.5 55.1 9.5 47.9 C 9.5 11.7 41.3 23 60.9 37.7 Z"/>
+  </symbol>
+  <symbol id="share-hatena" viewBox="0 0 500 500" fill="currentColor">
+    <path d="M278.2 258.1q-13.6-15.2-37.8-17c14.4-3.9 24.8-9.6 31.4-17.3s9.8-17.8 9.8-30.7A55 55 0 0 0 275 166a48.8 48.8 0 0 0-19.2-18.6c-7.3-4-16-6.9-26.2-8.6s-28.1-2.4-53.7-2.4h-62.3v227.2h64.2q38.7 0 55.8-2.6c11.4-1.8 20.9-4.8 28.6-8.9a52.5 52.5 0 0 0 21.9-21.4c5.1-9.2 7.7-19.9 7.7-32.1 0-16.9-4.5-30.4-13.6-40.5zm-107-71.4h13.3q23.1 0 31 5.2c5.3 3.5 7.9 9.5 7.9 18s-2.9 14-8.5 17.4-16.1 5-31.4 5h-12.3v-45.6zM224 317c-6.1 3.7-16.5 5.5-31.1 5.5h-21.7V273h22.6c15 0 25.4 1.9 30.9 5.7s8.4 10.4 8.4 20-3 14.7-9.2 18.4zM357.6 306.1a28.8 28.8 0 1 0 28.8 28.8 28.8 28.8 0 0 0-28.8-28.8zM332.6 136.4h50v151.52h-50z"/>
+  </symbol>
+</svg>

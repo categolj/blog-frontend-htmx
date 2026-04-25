@@ -1,0 +1,14 @@
+{{<layouts/default}}
+{{$content}}
+<section class="note-not-subscribed">
+  <h1 class="hero-title">未購読のコンテンツです</h1>
+  <p class="note-not-subscribed-message">{{message}}</p>
+  {{#noteUrl}}
+  <p>
+    <a class="note-buy-link" href="{{.}}" target="_blank" rel="noopener noreferrer">note.comで購読リンクを確認する</a>
+  </p>
+  {{/noteUrl}}
+  <p><a href="/notes">&laquo; Notes一覧へ戻る</a></p>
+</section>
+{{/content}}
+{{/layouts/default}}

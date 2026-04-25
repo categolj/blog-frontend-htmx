@@ -1,0 +1,9 @@
+<section id="entries" class="entries" aria-live="polite">
+  {{^page.content}}
+    <p class="empty">No entries found{{#hasFilter}} for the current filter{{/hasFilter}}.</p>
+  {{/page.content}}
+  {{#page.content}}
+    {{> fragments/entry-item}}
+  {{/page.content}}
+  {{> fragments/more}}
+</section>

@@ -1,0 +1,80 @@
+{{<layouts/default}}
+{{$content}}
+<section class="hero">
+  <h1 class="hero-title">MOV to GIF Converter</h1>
+  <p class="hero-sub">Convert video files to GIF animations entirely in your browser.</p>
+</section>
+
+<section class="lab-tool-body" id="mov-to-gif">
+  <p class="lab-status">
+    Status:
+    <span class="lab-status-badge" data-status="loading">Loading FFmpeg…</span>
+  </p>
+
+  <div class="lab-dropzone" data-dropzone tabindex="0" role="button"
+       aria-label="Drop a video file here or click to select">
+    <input type="file" accept="video/*,.mov" hidden data-file-input>
+    <div class="lab-dropzone-empty">
+      <p class="lab-dropzone-plus">+</p>
+      <p class="lab-dropzone-hint">Drop a video file here or click to select</p>
+    </div>
+    <div class="lab-dropzone-selected" hidden>
+      <p class="lab-file-name"></p>
+      <p class="lab-file-size"></p>
+      <p class="lab-file-change">Click or drop to change file</p>
+    </div>
+  </div>
+
+  <div class="lab-settings">
+    <label class="lab-field">
+      <span class="lab-field-label">Width (px)</span>
+      <input type="number" name="scale" value="720" min="100" max="1920" class="lab-input">
+    </label>
+    <label class="lab-field">
+      <span class="lab-field-label">FPS</span>
+      <input type="number" name="fps" value="10" min="1" max="30" class="lab-input">
+    </label>
+    <label class="lab-field">
+      <span class="lab-field-label">Quality</span>
+      <select name="quality" class="lab-input">
+        <option value="low" selected>Low (fast)</option>
+        <option value="medium">Medium</option>
+        <option value="high">High (slow)</option>
+      </select>
+    </label>
+    <label class="lab-field">
+      <span class="lab-field-label">Speed</span>
+      <select name="speed" class="lab-input">
+        <option value="0.25">0.25x</option>
+        <option value="0.5">0.5x</option>
+        <option value="1" selected>1x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+        <option value="4">4x</option>
+      </select>
+    </label>
+  </div>
+
+  <button type="button" class="lab-convert-btn" data-convert disabled>
+    Convert to GIF
+  </button>
+
+  <div class="lab-progress" hidden data-progress-wrap>
+    <div class="lab-progress-bar" data-progress-bar></div>
+  </div>
+
+  <section class="lab-result" hidden data-result>
+    <h3 class="lab-result-title">Result</h3>
+    <img class="lab-result-img" alt="Converted GIF" data-result-img>
+    <button type="button" class="lab-download-btn" data-download>Download GIF</button>
+  </section>
+
+  <details class="lab-log" hidden data-log-wrap>
+    <summary class="lab-log-summary">FFmpeg Log (<span data-log-count>0</span>)</summary>
+    <pre class="lab-log-body" data-log></pre>
+  </details>
+</section>
+
+<script src="{{#src}}/js/mov-to-gif.js{{/src}}" defer></script>
+{{/content}}
+{{/layouts/default}}

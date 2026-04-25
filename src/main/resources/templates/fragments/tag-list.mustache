@@ -1,0 +1,31 @@
+<section id="tag-list-section" class="tag-page" data-tag-page>
+  {{^tags}}<p class="empty">No tags yet.</p>{{/tags}}
+  {{#tags.0}}
+  <div class="tag-toolbar">
+    <div class="tag-filter">
+      <label class="visually-hidden" for="tag-filter-input">Filter tags</label>
+      <input id="tag-filter-input"
+             type="search"
+             placeholder="Filter tags…"
+             autocomplete="off"
+             aria-controls="tag-list">
+    </div>
+    <div class="tag-sort" role="group" aria-label="Sort tags">
+      <span class="tag-sort-label">Sort by:</span>
+      <button type="button" class="tag-sort-btn is-active" data-sort="name" aria-pressed="true">Name</button>
+      <button type="button" class="tag-sort-btn" data-sort="count" aria-pressed="false">Count</button>
+    </div>
+  </div>
+  <ul id="tag-list" class="tag-list">
+    {{#tags}}
+    <li class="tag-list-item" data-name="{{name}}" data-count="{{count}}">
+      <a class="tag-list-link" href="/tags/{{#urlPath}}{{{name}}}{{/urlPath}}/entries">
+        <span class="tag-list-name">{{name}}</span>
+        <span class="tag-list-count">{{count}}</span>
+      </a>
+    </li>
+    {{/tags}}
+  </ul>
+  <p id="tag-list-empty" class="tag-list-empty" hidden>No tags match.</p>
+  {{/tags.0}}
+</section>

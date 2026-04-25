@@ -1,0 +1,32 @@
+{{<layouts/default}}
+{{$content}}
+<section class="note-auth">
+  <h1 class="hero-title">Subscribe</h1>
+
+  {{#notFound}}
+  <div class="note-alert note-alert-error" role="alert">
+    存在しないNoteです。
+  </div>
+  <p class="note-auth-foot">
+    <a href="/notes">Notes一覧へ戻る</a>
+  </p>
+  {{/notFound}}
+
+  {{^notFound}}
+    {{#alreadySubscribed}}
+    <div class="note-alert note-alert-info" role="status">
+      既に購読状態になっています。<a href="/notes/{{entryId}}">記事</a>にアクセスしてください。
+    </div>
+    {{/alreadySubscribed}}
+    {{^alreadySubscribed}}
+    <div class="note-alert note-alert-success" role="status">
+      記事が購読状態になりました。<a href="/notes/{{entryId}}">記事</a>にアクセスしてください。
+    </div>
+    {{/alreadySubscribed}}
+    <p class="note-auth-foot">
+      <a href="/notes">Notes一覧へ戻る</a>
+    </p>
+  {{/notFound}}
+</section>
+{{/content}}
+{{/layouts/default}}

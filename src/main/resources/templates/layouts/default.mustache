@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="{{htmlLang}}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{{#pageTitle}}{{.}} · {{/pageTitle}}{{blog.name}}</title>
+  {{$metaDescription}}<meta name="description" content="{{blog.description}}">{{/metaDescription}}
+  {{$metaSocial}}
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{#pageTitle}}{{.}} · {{/pageTitle}}{{blog.name}}">
+  <meta property="og:description" content="{{blog.description}}">
+  <meta property="og:url" content="{{canonicalUrl}}">
+  <meta property="og:image" content="{{blog.defaultOgImage}}">
+  <meta property="og:site_name" content="{{blog.name}}">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="{{blog.xHandle}}">
+  <link rel="canonical" href="{{canonicalUrl}}">
+  {{/metaSocial}}
+  <link rel="icon" type="image/svg+xml" href="{{#src}}/favicon.svg{{/src}}">
+  <link rel="alternate" type="application/atom+xml" title="{{blog.name}}" href="{{#src}}/rss{{/src}}">
+  <link rel="stylesheet" href="{{#src}}/css/style.css{{/src}}">
+  <!-- source: https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css -->
+  <link id="hl-theme-light" rel="stylesheet" href="{{#src}}/css/github.min.css{{/src}}" media="(prefers-color-scheme: light)">
+  <!-- source: https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github-dark.min.css -->
+  <link id="hl-theme-dark" rel="stylesheet" href="{{#src}}/css/github-dark.min.css{{/src}}" media="(prefers-color-scheme: dark)">
+  <script>
+    {
+      try {
+        const t = localStorage.getItem("theme");
+        if (t === "light" || t === "dark") {
+          document.documentElement.dataset.theme = t;
+          const light = document.getElementById("hl-theme-light");
+          const dark = document.getElementById("hl-theme-dark");
+          if (light && dark) {
+            light.media = t === "light" ? "all" : "not all";
+            dark.media = t === "dark" ? "all" : "not all";
+          }
+        }
+      } catch {}
+    }
+  </script>
+  {{#bundledJs}}
+  <script src="{{#src}}/js/app.min.js{{/src}}" defer></script>
+  {{/bundledJs}}
+  {{^bundledJs}}
+  <!-- source: https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js -->
+  <script src="{{#src}}/js/vendor/htmx.min.js{{/src}}" defer></script>
+  <!-- source: https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js -->
+  <script src="{{#src}}/js/vendor/highlight.min.js{{/src}}" defer></script>
+  <script src="{{#src}}/js/code-highlight.js{{/src}}" defer></script>
+  <script src="{{#src}}/js/code-copy.js{{/src}}" defer></script>
+  <script src="{{#src}}/js/theme-toggle.js{{/src}}" defer></script>
+  <script src="{{#src}}/js/tag-filter.js{{/src}}" defer></script>
+  <script src="{{#src}}/js/search-indicator.js{{/src}}" defer></script>
+  <script src="{{#src}}/js/nav-toggle.js{{/src}}" defer></script>
+  <script src="{{#src}}/js/back-to-top.js{{/src}}" defer></script>
+  <script src="{{#src}}/js/header-particles.js{{/src}}" defer></script>
+  <script src="{{#src}}/js/error-toast.js{{/src}}" defer></script>
+  <script src="{{#src}}/js/counter-error.js{{/src}}" defer></script>
+  <script src="{{#src}}/js/giscus.js{{/src}}" defer></script>
+  <script src="{{#src}}/js/note-form-loading.js{{/src}}" defer></script>
+  {{/bundledJs}}
+</head>
+<body hx-boost="true">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="container site-header-inner">
+      <a class="brand" href="/" aria-label="Home">
+        <span class="brand-mark">✱</span>
+        <span class="brand-name">{{blog.name}}</span>
+      </a>
+      <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Menu">
+        <svg aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#hamburger"/></svg>
+      </button>
+      <nav id="site-nav" class="site-nav" aria-label="Primary">
+        <a href="/entries">Entries</a>
+        <a href="/tags">Tags</a>
+        <a href="/categories">Categories</a>
+        <a href="/notes">Notes</a>
+        <a href="/lab">Lab</a>
+        <a href="/aboutme">About</a>
+        <form class="search-form" action="/entries" method="get" role="search">
+          <label class="visually-hidden" for="header-search">Search</label>
+          <input id="header-search" class="search-input" type="search" name="query" placeholder="Search…" autocomplete="off">
+          <span class="search-spinner" aria-hidden="true"></span>
+        </form>
+        <button type="button" class="theme-toggle" aria-label="Theme: system (click to switch to light)" title="Theme: system (click to switch to light)">
+          <svg class="theme-icon theme-icon-system" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#theme-system"/></svg>
+          <svg class="theme-icon theme-icon-light" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#theme-light"/></svg>
+          <svg class="theme-icon theme-icon-dark" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#theme-dark"/></svg>
+        </button>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="container main-content">
+    {{$content}}{{/content}}
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      <p><a href="/">{{blog.name}}</a> &mdash; &copy; 2010-{{currentYear}} Toshiaki Maki</p>
+    </div>
+  </footer>
+  <button type="button" class="back-to-top" aria-label="Scroll to top" title="Scroll to top" hidden>
+    <svg aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#arrow-up"/></svg>
+  </button>
+</body>
+</html>

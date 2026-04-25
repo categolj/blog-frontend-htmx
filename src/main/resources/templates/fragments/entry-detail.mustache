@@ -1,0 +1,82 @@
+<article class="entry" id="entry-{{entry.entryId}}">
+  <header class="entry-header">
+    {{#hasCategoryCrumbs}}
+    <nav class="entry-breadcrumb" aria-label="Categories">
+      <svg class="entry-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#folder"/></svg>
+      {{#categoryCrumbs}}
+        <a href="{{{url}}}">{{name}}</a>
+        {{^last}}<span class="crumb-sep" aria-hidden="true">/</span>{{/last}}
+      {{/categoryCrumbs}}
+    </nav>
+    {{/hasCategoryCrumbs}}
+
+    <h1 class="entry-title">{{entry.frontMatter.title}}</h1>
+
+    <div class="entry-meta-row">
+      <div class="entry-meta">
+        <span class="meta-item" title="Published">
+          <svg class="entry-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#calendar"/></svg>
+          <time datetime="{{entry.created.isoDate}}">{{entry.created.displayDate}}</time>
+        </span>
+        <span class="meta-item" title="Updated">
+          <svg class="entry-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#pencil"/></svg>
+          <time datetime="{{entry.updated.isoDate}}">{{entry.updated.displayDate}}</time>
+        </span>
+        <span class="meta-item views-counter" title="Views"
+              hx-post="/counter/{{entry.entryId}}"
+              hx-trigger="load"
+              hx-swap="outerHTML">
+          <svg class="entry-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#eye"/></svg>
+          <span class="views-count" aria-live="polite">
+            <span class="views-indicator" aria-hidden="true"></span>
+            <span class="visually-hidden">Loading views</span>
+          </span>
+          <span class="views-label">Views</span>
+        </span>
+        {{#languageToggle}}
+        <a class="lang-badge" href="{{url}}" aria-label="Switch language" title="Switch language">
+          <svg class="lang-badge-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#globe"/></svg>
+          <span>{{label}}</span>
+        </a>
+        {{/languageToggle}}
+        <a class="md-badge" href="{{{markdownUrl}}}" hx-boost="false" title="View raw markdown">MD</a>
+      </div>
+      <div class="entry-tags">
+        {{#entry.frontMatter.tags}}
+          <a class="entry-tag" href="/tags/{{#urlPath}}{{{name}}}{{/urlPath}}/entries">{{name}}</a>
+        {{/entry.frontMatter.tags}}
+      </div>
+    </div>
+  </header>
+  {{#isStale}}
+  <aside class="entry-stale markdown-alert markdown-alert-warning" role="note">
+    <p class="markdown-alert-title">Warning</p>
+    <p>This article was last updated <strong>{{staleYears}} years ago</strong> &mdash; some information may be out of date.</p>
+  </aside>
+  {{/isStale}}
+  <div class="entry-body prose">
+    {{{contentHtml}}}
+  </div>
+  {{#giscus.enabled}}
+  <section class="comments"
+           data-giscus-repo="{{giscus.repo}}"
+           data-giscus-repo-id="{{giscus.repoId}}"
+           data-giscus-category="{{giscus.category}}"
+           data-giscus-category-id="{{giscus.categoryId}}"
+           data-giscus-mapping="{{giscus.mapping}}"></section>
+  {{/giscus.enabled}}
+  <nav class="share" aria-label="Share">
+    <a class="share-btn share-x" href="{{shareUrlX}}" target="_blank" rel="noopener" title="Share on X (Twitter)">
+      <svg class="share-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#share-x"/></svg>
+      <span class="share-label">Share on X</span>
+    </a>
+    <a class="share-btn share-bluesky" href="{{shareUrlBluesky}}" target="_blank" rel="noopener" title="Share on Bluesky">
+      <svg class="share-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#share-bluesky"/></svg>
+      <span class="share-label">Share on Bluesky</span>
+    </a>
+    <a class="share-btn share-hatena" href="{{shareUrlHatena}}" target="_blank" rel="noopener" title="Share on Hatena Bookmark">
+      <svg class="share-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#share-hatena"/></svg>
+      <span class="share-label">Hatena Bookmark</span>
+    </a>
+  </nav>
+</article>

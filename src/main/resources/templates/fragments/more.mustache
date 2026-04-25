@@ -1,0 +1,12 @@
+<div class="more-wrap">
+  {{#nextUrl}}
+    <a class="read-more-btn"
+       href="{{{.}}}"
+       hx-get="{{{.}}}"
+       hx-target="closest .more-wrap"
+       hx-swap="outerHTML">
+      <span>Read more</span>
+      <span aria-hidden="true">↓</span>
+    </a>
+  {{/nextUrl}}
+</div>

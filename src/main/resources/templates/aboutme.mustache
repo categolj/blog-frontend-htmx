@@ -1,0 +1,72 @@
+{{<layouts/default}}
+{{$content}}
+<section class="hero">
+  <h1 class="hero-title">About Me</h1>
+</section>
+
+<section class="about">
+  <div class="about-profile">
+    <img class="about-avatar"
+         src="{{profile.avatarUrl}}"
+         width="180"
+         height="180"
+         alt="{{blog.xHandle}}">
+    <div class="about-profile-body">
+      <h2 class="about-name">{{profile.name}}</h2>
+      <p class="about-role">{{profile.title}}</p>
+      <ul class="about-contacts">
+        <li><a class="about-contact" href="{{blog.xUrl}}">{{blog.xHandle}}</a></li>
+        <li><span class="about-contact">{{profile.email}}</span></li>
+      </ul>
+      <p class="about-tagline">
+        Dog lover <a href="{{profile.dogBreedUrl}}">({{profile.dogBreedLabel}})</a>. My dog's name is {{profile.dogName}}.
+      </p>
+    </div>
+  </div>
+
+  <section class="about-section">
+    <h3 class="about-section-title">Work Experience</h3>
+    <ul class="about-timeline">
+      {{#companies}}
+      <li class="about-timeline-item">
+        <div class="about-timeline-org">
+          <a href="{{url}}">{{name}}</a>
+        </div>
+        <ul class="about-roles">
+          {{#roles}}
+          <li class="about-role-item">
+            <span class="about-role-title">{{title}}</span>
+            <span class="about-role-period">{{period}}</span>
+            <span class="about-role-location">{{location}}</span>
+          </li>
+          {{/roles}}
+        </ul>
+      </li>
+      {{/companies}}
+    </ul>
+  </section>
+
+  <section class="about-section">
+    <h3 class="about-section-title">Education</h3>
+    <ul class="about-timeline">
+      {{#schools}}
+      <li class="about-timeline-item">
+        <div class="about-timeline-org">{{name}}</div>
+        <ul class="about-roles">
+          {{#degrees}}
+          <li class="about-role-item">
+            <span class="about-role-title">{{title}}</span>
+            <span class="about-role-period">{{period}}</span>
+            <span class="about-role-location">
+              <a href="{{locationUrl}}">{{locationLabel}}</a>
+            </span>
+          </li>
+          {{/degrees}}
+        </ul>
+      </li>
+      {{/schools}}
+    </ul>
+  </section>
+</section>
+{{/content}}
+{{/layouts/default}}

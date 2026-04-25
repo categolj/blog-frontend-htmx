@@ -1,0 +1,18 @@
+<section id="category-list" class="category-list">
+  {{^hasCategories}}<p class="empty">No categories yet.</p>{{/hasCategories}}
+  {{#hasCategories}}
+    <ul class="category-list-items">
+      {{#categories}}
+        <li class="category-list-item">
+          <nav class="category-crumbs" aria-label="Category">
+            <svg class="entry-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#folder"/></svg>
+            {{#.}}
+              <a href="{{{url}}}">{{name}}</a>
+              {{^last}}<span class="crumb-sep" aria-hidden="true">/</span>{{/last}}
+            {{/.}}
+          </nav>
+        </li>
+      {{/categories}}
+    </ul>
+  {{/hasCategories}}
+</section>

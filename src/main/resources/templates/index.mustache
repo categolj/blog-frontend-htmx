@@ -1,0 +1,36 @@
+{{<layouts/default}}
+{{$content}}
+<section class="hero">
+  {{#hasCategoryCrumbs}}
+    <nav class="entry-breadcrumb" aria-label="Category">
+      <svg class="entry-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#folder"/></svg>
+      {{#categoryCrumbs}}
+        <a href="{{{url}}}">{{name}}</a>
+        {{^last}}<span class="crumb-sep" aria-hidden="true">/</span>{{/last}}
+      {{/categoryCrumbs}}
+    </nav>
+  {{/hasCategoryCrumbs}}
+  {{^hasCategoryCrumbs}}
+    {{#tag}}
+      <nav class="entry-breadcrumb" aria-label="Tag">
+        <svg class="entry-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#tag"/></svg>
+        <span>#{{.}}</span>
+      </nav>
+    {{/tag}}
+    {{^tag}}
+      {{#query}}
+        <nav class="entry-breadcrumb" aria-label="Search">
+          <svg class="entry-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#search"/></svg>
+          <span>{{.}}</span>
+        </nav>
+      {{/query}}
+      {{^query}}
+        <h1 class="hero-title">{{pageTitle}}</h1>
+      {{/query}}
+    {{/tag}}
+  {{/hasCategoryCrumbs}}
+</section>
+
+{{> fragments/entry-list}}
+{{/content}}
+{{/layouts/default}}

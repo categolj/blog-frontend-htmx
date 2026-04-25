@@ -1,0 +1,22 @@
+{{<layouts/default}}
+{{$content}}
+<section class="note-auth">
+  <h1 class="hero-title">Activation</h1>
+
+  {{#success}}
+  <div class="note-alert note-alert-success" role="status">
+    アカウントがアクティベートされました。<a href="/note/login">ログイン</a>してください。
+  </div>
+  {{/success}}
+  {{^success}}
+  <div class="note-alert note-alert-error" role="alert">
+    アクティベーションに失敗しました: {{message}}
+  </div>
+  <p class="note-auth-foot">
+    <a href="/note/login">ログイン</a>
+    / <a href="/note/signup">サインアップ</a>
+  </p>
+  {{/success}}
+</section>
+{{/content}}
+{{/layouts/default}}

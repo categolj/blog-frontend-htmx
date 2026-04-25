@@ -1,0 +1,28 @@
+<article class="entry note-entry" id="note-{{note.entryId}}">
+  <header class="entry-header">
+    <nav class="entry-breadcrumb" aria-label="Back to notes">
+      <svg class="entry-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#folder"/></svg>
+      <a href="/notes">Notes</a>
+      <span class="crumb-sep" aria-hidden="true">/</span>
+      <span>{{note.title}}</span>
+    </nav>
+    <h1 class="entry-title">
+      <a href="/notes/{{note.entryId}}">{{note.title}}</a>
+    </h1>
+    <div class="entry-meta-row">
+      <div class="entry-meta">
+        <span class="meta-item" title="Published">
+          <svg class="entry-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#calendar"/></svg>
+          <time datetime="{{note.created.isoDate}}">{{note.created.displayDate}}</time>
+        </span>
+        <span class="meta-item" title="Updated">
+          <svg class="entry-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#pencil"/></svg>
+          <time datetime="{{note.updated.isoDate}}">{{note.updated.displayDate}}</time>
+        </span>
+      </div>
+    </div>
+  </header>
+  <div class="entry-body prose">
+    {{{contentHtml}}}
+  </div>
+</article>

@@ -1,0 +1,55 @@
+<section class="note-section" id="notes">
+  <header class="note-section-header">
+    <h1 class="hero-title">Notes</h1>
+    <div class="note-user-row">
+      <span class="note-user">ようこそ <strong>{{username}}</strong> さん</span>
+      <form method="post" action="/note/logout" class="note-logout-form" hx-boost="false">
+        <input type="hidden" name="{{_csrf.parameterName}}" value="{{_csrf.token}}">
+        <button type="submit" class="note-logout">Logout</button>
+      </form>
+    </div>
+  </header>
+
+  <div class="note-magazine">
+    <h2 class="note-magazine-title">
+      {{magazineTitle}}
+      <span class="note-counter">{{subscribedCount}}/{{totalCount}} 購読済み</span>
+    </h2>
+
+    <ul class="note-list">
+      {{#notes}}
+      <li class="note-list-item {{^subscribed}}note-list-item-unsubscribed{{/subscribed}}">
+        <div class="note-list-title">
+          {{#detailHref}}
+          <a href="{{.}}">{{title}}</a>
+          {{/detailHref}}
+          {{^detailHref}}
+            {{#hasTitle}}<span>{{title}}</span>{{/hasTitle}}
+            {{^hasTitle}}<span class="note-list-title-placeholder">タイトル未定</span>{{/hasTitle}}
+          {{/detailHref}}
+        </div>
+        <div class="note-list-meta">
+          {{#subscribed}}
+          <span class="note-badge note-badge-subscribed" aria-label="購読済み">購読済み</span>
+          {{/subscribed}}
+          {{^subscribed}}
+          <span class="note-badge note-badge-unsubscribed" aria-label="未購読">未購読</span>
+          <a class="note-buy-link" href="{{noteUrl}}" target="_blank" rel="noopener noreferrer">購読リンク (要購入)</a>
+          {{/subscribed}}
+          {{#updatedIso}}
+          <time class="note-list-date" datetime="{{.}}">{{.}}</time>
+          {{/updatedIso}}
+        </div>
+      </li>
+      {{/notes}}
+    </ul>
+  </div>
+
+  <aside class="note-legend">
+    <p><strong>表示について:</strong></p>
+    <ul>
+      <li>購読済みのコンテンツはタイトルをクリックして閲覧できます。</li>
+      <li>未購読のコンテンツはnote.comで購入後、購読登録が必要です。</li>
+    </ul>
+  </aside>
+</section>

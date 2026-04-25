@@ -1,0 +1,12 @@
+{{<layouts/default}}
+{{$content}}
+<section class="error-page">
+  <p class="error-status">{{status}}</p>
+  <h1 class="error-title">{{error}}</h1>
+  {{#path}}<p class="error-path"><code>{{.}}</code></p>{{/path}}
+  <p class="error-sub">
+    <a href="/" class="btn">Go home</a>
+  </p>
+</section>
+{{/content}}
+{{/layouts/default}}

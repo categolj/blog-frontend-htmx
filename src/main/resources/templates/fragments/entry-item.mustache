@@ -1,0 +1,15 @@
+<article class="entry-card">
+  <h2 class="entry-card-title">
+    <a href="/entries/{{entryId}}">{{frontMatter.title}}</a>
+  </h2>
+  <div class="entry-card-meta">
+    <time datetime="{{updated.isoDate}}">{{updated.displayDate}}</time>
+    <span class="entry-card-id">#{{formattedId}}</span>
+  </div>
+  {{#frontMatter.summary}}
+    <p class="entry-card-summary">{{.}}</p>
+  {{/frontMatter.summary}}
+  {{#frontMatter.tags}}
+    <a class="chip" href="/tags/{{#urlPath}}{{{name}}}{{/urlPath}}/entries">#{{name}}</a>
+  {{/frontMatter.tags}}
+</article>
