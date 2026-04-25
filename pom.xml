@@ -203,6 +203,7 @@
                         </env>
                     </image>
                     <systemPropertyVariables>
+                        <spring.profiles.active>prod</spring.profiles.active>
                         <management.tracing.export.otlp.enabled>true</management.tracing.export.otlp.enabled>
                         <management.logging.export.otlp.enabled>true</management.logging.export.otlp.enabled>
                         <management.opentelemetry.tracing.export.otlp.endpoint>
