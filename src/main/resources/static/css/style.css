@@ -833,6 +833,7 @@ a:hover {
   background: color-mix(in srgb, var(--accent) 8%, transparent);
   border-block-end: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
   border-radius: 3px 3px 0 0;
+  margin-block-end: 1.2em;
 }
 .prose h4 {
   font-size: 1rem;
