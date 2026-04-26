@@ -77,6 +77,11 @@
             <version>0.7.0</version>
         </dependency>
         <dependency>
+            <groupId>am.ik.spring</groupId>
+            <artifactId>circuit-breaker-client-http-request-interceptor</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+        <dependency>
             <groupId>am.ik.spring.opentelemetry</groupId>
             <artifactId>otel-logs-autoconfigure-logback</artifactId>
             <version>0.6.0</version>
