@@ -1725,6 +1725,60 @@ a.about-contact:hover {
   transition: opacity 0.08s ease;
 }
 
+/*
+ * Top progress bar for hx-boost page navigation. Driven by page-progress.js
+ * via :root[data-loading]. Rendered as a pseudo-element on <html> rather
+ * than a real DOM node, because the body's innerHTML is swapped on boosted
+ * navigation — any element inside body would disappear mid-request.
+ *
+ * Two phases via the data-loading value:
+ *   "1"    — request in flight: width grows asymptotically toward 80% over
+ *            8s with a fast cubic-bezier (slow tail).
+ *   "done" — completion phase: width races to 100% in 0.18s, then opacity
+ *            fades to 0 over 0.2s with a 0.12s delay so the fill finishes
+ *            before the bar starts disappearing.
+ *
+ * The "done" phase exists so the bar does not just snap from 80% to 0 the
+ * moment the swap completes — that snap registered as a flicker, especially
+ * when navigating from low in a long list (the swap, the auto-scroll-to-top,
+ * and the bar's disappearance all coincide).
+ */
+:root::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: var(--accent);
+  opacity: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+:root[data-loading="1"]::before {
+  width: 80%;
+  opacity: 1;
+  transition: width 8s cubic-bezier(0.05, 0.7, 0.1, 1), opacity 0.05s ease;
+}
+:root[data-loading="done"]::before {
+  width: 100%;
+  opacity: 0;
+  transition: width 0.18s ease, opacity 0.2s ease 0.12s;
+}
+:root[data-loading="1"] {
+  cursor: progress;
+}
+/*
+ * Dim the clicked link while its hx-boost request is in flight. htmx adds
+ * .htmx-request to the triggering element automatically and the link is
+ * still in the DOM until the body swap completes — which is exactly the
+ * slow-network window where the user wonders if the click registered.
+ */
+a.htmx-request {
+  opacity: 0.55;
+  transition: opacity 0.05s ease;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

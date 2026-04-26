@@ -297,6 +297,7 @@
                                 <include>theme-toggle.js</include>
                                 <include>tag-filter.js</include>
                                 <include>search-indicator.js</include>
+                                <include>page-progress.js</include>
                                 <include>nav-toggle.js</include>
                                 <include>back-to-top.js</include>
                                 <include>header-particles.js</include>
