@@ -6,7 +6,7 @@
   --fg-muted: #666666;
   --fg-subtle: #999999;
   --border: #ececec;
-  --accent: #0060d0;
+  --accent: #0d7380;
   --font-serif: ui-serif, Georgia, "Iowan Old Style", "Hiragino Mincho ProN", "Yu Mincho",
     "Noto Serif JP", serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -21,7 +21,7 @@
     --fg-muted: #9a9a9a;
     --fg-subtle: #6a6a6a;
     --border: #232326;
-    --accent: #6fb0ff;
+    --accent: #5fd0dc;
   }
 }
 :root[data-theme="dark"] {
@@ -30,7 +30,7 @@
   --fg-muted: #9a9a9a;
   --fg-subtle: #6a6a6a;
   --border: #232326;
-  --accent: #6fb0ff;
+  --accent: #5fd0dc;
 }
 
 *,
