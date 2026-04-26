@@ -763,6 +763,12 @@ a:hover {
   text-decoration: none;
 }
 
+/* Giscus comments */
+
+.comments {
+  margin-block-start: 3.5rem;
+}
+
 /* Share row (entry footer) */
 
 .share {
