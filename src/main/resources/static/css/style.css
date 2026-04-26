@@ -951,6 +951,7 @@ a:hover {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
+  margin-block-end: 1em;
 }
 .prose th,
 .prose td {
