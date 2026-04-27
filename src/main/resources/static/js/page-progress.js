@@ -9,7 +9,7 @@
 // before showing the bar avoids flickering on fast responses.
 //
 // Scope: only boosted navigations (hx-boost on body covers <a> clicks and
-// form submits). Targeted hx-get / hx-post requests like the Read more
+// form submits). Targeted hx-get / hx-post requests like the Load more
 // button or the counter have their own local indicators and are excluded
 // via e.detail.boosted. The header search form is also excluded because
 // search-indicator.js drives its own spinner.

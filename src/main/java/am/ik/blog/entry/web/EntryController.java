@@ -203,7 +203,7 @@ public class EntryController {
 		String nextUrl = buildPageUrl(basePath, nextCursor, PageDirection.NEXT, query);
 		model.addAttribute("nextUrl", nextUrl);
 		if (Htmx.isPartial(request)) {
-			// When loading more via the Read more button (cursor is present) return an
+			// When loading more via the Load more button (cursor is present) return an
 			// unwrapped fragment that is appended after the current batch. Otherwise
 			// (search / filter / initial HTMX swap) return the wrapped #entries section.
 			if (StringUtils.hasText(cursor)) {

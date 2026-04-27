@@ -565,7 +565,7 @@ a:hover {
   text-underline-offset: 0.2em;
 }
 
-/* Read more button */
+/* Load more button */
 
 .more-wrap {
   display: flex;
@@ -586,13 +586,31 @@ a:hover {
   transition: color 0.1s ease, border-color 0.1s ease;
 }
 .read-more-btn:hover {
-  color: var(--accent);
+  color: var(--fg);
   border-color: var(--fg-subtle);
   text-decoration: none;
 }
 .read-more-btn.htmx-request {
   color: var(--fg-subtle);
   pointer-events: none;
+  /* Override the global a.htmx-request opacity dimming so the in-button
+     spinner stays clearly visible while loading. */
+  opacity: 1;
+}
+.read-more-spinner {
+  display: none;
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 1.5px solid color-mix(in srgb, var(--fg-muted) 35%, transparent);
+  border-top-color: var(--fg-muted);
+  border-radius: 50%;
+  animation: search-spin 0.7s linear infinite;
+}
+.read-more-btn.htmx-request .read-more-arrow {
+  display: none;
+}
+.read-more-btn.htmx-request .read-more-spinner {
+  display: inline-block;
 }
 .btn {
   display: inline-flex;

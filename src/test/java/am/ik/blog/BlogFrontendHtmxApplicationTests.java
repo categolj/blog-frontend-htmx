@@ -1102,7 +1102,7 @@ class BlogFrontendHtmxApplicationTests {
 		// language.
 		assertThat(requireSelected(doc, "html").attr("lang")).isEqualTo("en");
 		assertThat(doc.title()).isEqualTo("Entries · IK.AM");
-		// Read more button, when rendered, must keep the English base path so
+		// Load more button, when rendered, must keep the English base path so
 		// pagination stays on the English tenant.
 		Element entries = requireSelected(doc, "section#entries");
 		assertThat(entries.select("article.entry-card")).hasSize(2);
@@ -1312,7 +1312,7 @@ class BlogFrontendHtmxApplicationTests {
 		assertThat(readMore.attr("hx-get")).isEqualTo(expectedHref);
 		assertThat(readMore.attr("hx-target")).isEqualTo("closest .more-wrap");
 		assertThat(readMore.attr("hx-swap")).isEqualTo("outerHTML");
-		assertThat(readMore.text()).isEqualTo("Read more ↓");
+		assertThat(readMore.text()).isEqualTo("Load more ↓");
 	}
 
 	private Document parsePage(String path, boolean htmx) {
