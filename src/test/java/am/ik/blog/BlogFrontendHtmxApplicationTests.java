@@ -1155,10 +1155,21 @@ class BlogFrontendHtmxApplicationTests {
 		mockApi.stubGetNotFound("/tenants/en/entries/42");
 		mockApi.stubGetJson("/entries/42", SAMPLE_ENTRY_WITH_CONTENT_JSON);
 
-		Document doc = parsePage("/entries/42/en", false);
+		// The requested EN URL has no resource, so the response is 404 — but the body
+		// is the branded notice rather than the generic error page so readers still get
+		// a clear path back to the Japanese original.
+		String body = this.client.get()
+			.uri("/entries/42/en")
+			.exchange()
+			.expectStatus()
+			.isNotFound()
+			.expectHeader()
+			.contentTypeCompatibleWith("text/html")
+			.expectBody(String.class)
+			.returnResult()
+			.getResponseBody();
+		Document doc = Jsoup.parse(Objects.requireNonNull(body));
 
-		// The response is 200 with a branded notice, not a 404 — readers should have a
-		// clear path back to the Japanese original instead of a dead end.
 		assertThat(doc.title()).isEqualTo("Not translated yet · IK.AM");
 		assertThat(requireSelected(doc, "html").attr("lang")).isEqualTo("en");
 		// Reuse the error-page visual shell (centered column, title, body, CTA) so
@@ -1192,7 +1203,18 @@ class BlogFrontendHtmxApplicationTests {
 		mockApi.stubGetNotFound("/tenants/en/entries/42");
 		mockApi.stubGetJson("/entries/42", SAMPLE_ENTRY_WITH_CONTENT_JSON);
 
-		Document doc = parsePage("/entries/42/en", true);
+		String body = this.client.get()
+			.uri("/entries/42/en")
+			.header("HX-Request", "true")
+			.exchange()
+			.expectStatus()
+			.isNotFound()
+			.expectHeader()
+			.contentTypeCompatibleWith("text/html")
+			.expectBody(String.class)
+			.returnResult()
+			.getResponseBody();
+		Document doc = Jsoup.parse(Objects.requireNonNull(body));
 
 		// HTMX partial: no layout chrome; just the notice so it swaps in place of the
 		// entry body.

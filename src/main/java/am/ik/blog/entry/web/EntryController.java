@@ -279,7 +279,7 @@ public class EntryController {
 		if (ja.isPresent()) {
 			// Not-translated notice is not keyed to a stable Last-Modified (becomes a
 			// real article once translation lands), so skip caching on this branch.
-			return renderNotTranslated(entryId, ja.get(), model, request);
+			return renderNotTranslated(entryId, ja.get(), model, request, response);
 		}
 		return renderNotFound(request, response, model);
 	}
@@ -320,9 +320,12 @@ public class EntryController {
 	 * Renders the "not translated yet" notice served in place of an English entry that
 	 * does not exist in the {@code en} tenant. Links to the Japanese original and to a
 	 * prefilled GitHub issue for requesting the translation (mirrors the React
-	 * {@code NotTranslated} component).
+	 * {@code NotTranslated} component). Returns 404 because the requested EN URL has no
+	 * resource — the notice is the body of a 404, not a successful response.
 	 */
-	private String renderNotTranslated(Long entryId, Entry jaEntry, Model model, HttpServletRequest request) {
+	private String renderNotTranslated(Long entryId, Entry jaEntry, Model model, HttpServletRequest request,
+			HttpServletResponse response) {
+		response.setStatus(HttpStatus.NOT_FOUND.value());
 		String jaUrl = "/entries/" + entryId;
 		model.addAttribute("entryId", entryId);
 		model.addAttribute("jaUrl", jaUrl);
