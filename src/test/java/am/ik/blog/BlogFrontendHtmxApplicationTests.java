@@ -1,6 +1,7 @@
 package am.ik.blog;
 
 import am.ik.blog.asset.AssetsVersion;
+import am.ik.blog.htmx.HtmxHeaders;
 import am.ik.blog.testsupport.MockServer;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -372,7 +373,7 @@ class BlogFrontendHtmxApplicationTests {
 			.expectHeader()
 			.valueEquals(HttpHeaders.CACHE_CONTROL, "max-age=3600, stale-while-revalidate=600")
 			.expectHeader()
-			.valueEquals(HttpHeaders.VARY, "HX-Request, HX-Boosted");
+			.valueEquals(HttpHeaders.VARY, HtmxHeaders.REQUEST + ", " + HtmxHeaders.BOOSTED);
 
 		assertThat(mockApi.requestCount("HEAD", "/entries/42")).as("HEAD called to short-circuit").isEqualTo(1);
 		assertThat(mockApi.requestCount("GET", "/entries/42")).as("full body fetch is skipped on 304").isZero();
@@ -436,7 +437,7 @@ class BlogFrontendHtmxApplicationTests {
 			.expectHeader()
 			.valueEquals(HttpHeaders.CACHE_CONTROL, "max-age=3600, stale-while-revalidate=600")
 			.expectHeader()
-			.valueEquals(HttpHeaders.VARY, "HX-Request, HX-Boosted");
+			.valueEquals(HttpHeaders.VARY, HtmxHeaders.REQUEST + ", " + HtmxHeaders.BOOSTED);
 
 		assertThat(mockApi.requestCount("HEAD", "/entries/42")).as("HEAD called to short-circuit").isEqualTo(1);
 		assertThat(mockApi.requestCount("GET", "/entries/42")).as("full body fetch is skipped on 304").isZero();
@@ -469,7 +470,7 @@ class BlogFrontendHtmxApplicationTests {
 
 		this.client.get()
 			.uri("/entries/42")
-			.header("HX-Request", "true")
+			.header(HtmxHeaders.REQUEST, "true")
 			.header(HttpHeaders.IF_NONE_MATCH, CURRENT_ETAG)
 			.header(HttpHeaders.IF_MODIFIED_SINCE, "Thu, 01 Jan 2026 00:00:00 GMT")
 			.exchange()
@@ -1230,7 +1231,7 @@ class BlogFrontendHtmxApplicationTests {
 
 		String body = this.client.get()
 			.uri("/entries/42/en")
-			.header("HX-Request", "true")
+			.header(HtmxHeaders.REQUEST, "true")
 			.exchange()
 			.expectStatus()
 			.isNotFound()
@@ -1419,7 +1420,7 @@ class BlogFrontendHtmxApplicationTests {
 	private @Nullable String rawBody(String path, boolean htmx) {
 		var spec = this.client.get().uri(path);
 		if (htmx) {
-			spec = spec.header("HX-Request", "true");
+			spec = spec.header(HtmxHeaders.REQUEST, "true");
 		}
 		return spec.exchange()
 			.expectStatus()

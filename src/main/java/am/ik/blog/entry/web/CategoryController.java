@@ -3,6 +3,7 @@ package am.ik.blog.entry.web;
 import am.ik.blog.entry.Category;
 import am.ik.blog.entry.EntryClient;
 import am.ik.blog.htmx.Htmx;
+import am.ik.blog.htmx.HtmxHeaders;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
@@ -43,7 +44,7 @@ public class CategoryController {
 			return "fragments/category-list";
 		}
 		response.setHeader(HttpHeaders.CACHE_CONTROL, CATEGORIES_CACHE_CONTROL.getHeaderValue());
-		response.setHeader(HttpHeaders.VARY, "HX-Request, HX-Boosted");
+		response.setHeader(HttpHeaders.VARY, HtmxHeaders.REQUEST + ", " + HtmxHeaders.BOOSTED);
 		return "categories";
 	}
 

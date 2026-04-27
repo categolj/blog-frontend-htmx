@@ -10,6 +10,7 @@ import am.ik.blog.entry.EntryQuery;
 import am.ik.blog.entry.EntryQuery.PageDirection;
 import am.ik.blog.entry.GiscusProps;
 import am.ik.blog.htmx.Htmx;
+import am.ik.blog.htmx.HtmxHeaders;
 import am.ik.blog.markdown.MarkdownRenderer;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -78,7 +79,7 @@ public class EntryController {
 	 * any shared cache) must key by HTMX headers. We only emit cache headers on
 	 * non-partial responses, but the {@code Vary} advertisement keeps caches honest.
 	 */
-	private static final String CACHE_VARY = "HX-Request, HX-Boosted";
+	private static final String CACHE_VARY = HtmxHeaders.REQUEST + ", " + HtmxHeaders.BOOSTED;
 
 	private final EntryClient entryClient;
 

@@ -7,21 +7,15 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 public final class Htmx {
 
-	public static final String HEADER_REQUEST = "HX-Request";
-
-	public static final String HEADER_BOOSTED = "HX-Boosted";
-
-	public static final String HEADER_TARGET = "HX-Target";
-
 	private Htmx() {
 	}
 
 	public static boolean isHtmxRequest(HttpServletRequest request) {
-		return "true".equals(request.getHeader(HEADER_REQUEST));
+		return "true".equals(request.getHeader(HtmxHeaders.REQUEST));
 	}
 
 	public static boolean isBoosted(HttpServletRequest request) {
-		return "true".equals(request.getHeader(HEADER_BOOSTED));
+		return "true".equals(request.getHeader(HtmxHeaders.BOOSTED));
 	}
 
 	/**
