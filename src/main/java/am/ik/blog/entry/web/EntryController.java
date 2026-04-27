@@ -14,7 +14,6 @@ import am.ik.blog.markdown.MarkdownRenderer;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -25,9 +24,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.CacheControl;
@@ -587,22 +584,16 @@ public class EntryController {
 		if (!StringUtils.hasText(cursor)) {
 			return null;
 		}
-		Map<String, String> params = new LinkedHashMap<>();
-		params.put("cursor", cursor);
-		params.put("direction", direction.name());
+		// `basePath` comes from `request.getRequestURI()` — already a valid pct-encoded
+		// URI path — so it's appended verbatim. The builder owns only the query string
+		// so values get RFC 3986 encoding without the path being touched.
+		UriComponentsBuilder builder = UriComponentsBuilder.newInstance()
+			.queryParam("cursor", cursor)
+			.queryParam("direction", direction.name());
 		if (StringUtils.hasText(query)) {
-			params.put("query", query);
+			builder.queryParam("query", query);
 		}
-		StringBuilder sb = new StringBuilder(basePath).append('?');
-		boolean first = true;
-		for (Map.Entry<String, String> e : params.entrySet()) {
-			if (!first) {
-				sb.append('&');
-			}
-			first = false;
-			sb.append(e.getKey()).append('=').append(URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8));
-		}
-		return sb.toString();
+		return basePath + builder.encode(StandardCharsets.UTF_8).build().toUriString();
 	}
 
 }

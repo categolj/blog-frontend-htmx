@@ -2,6 +2,7 @@ package am.ik.blog;
 
 import am.ik.blog.asset.AssetsVersion;
 import am.ik.blog.testsupport.MockServer;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.InstantSource;
@@ -114,7 +115,9 @@ class BlogFrontendHtmxApplicationTests {
 		Document doc = parsePage("/entries", false);
 
 		// Falls back to the last entry's `updated.date` when the API omits nextCursor.
-		assertReadMoreButtonHref(doc, "/entries?cursor=2026-04-10T09%3A30%3A00Z&direction=NEXT");
+		// `:` is allowed verbatim in query values per RFC 3986, so UriComponentsBuilder
+		// leaves it unencoded.
+		assertReadMoreButtonHref(doc, "/entries?cursor=2026-04-10T09:30:00Z&direction=NEXT");
 	}
 
 	@Test
@@ -123,7 +126,7 @@ class BlogFrontendHtmxApplicationTests {
 
 		Document doc = parsePage("/entries", false);
 
-		assertReadMoreButtonHref(doc, "/entries?cursor=2026-04-05T00%3A00%3A00Z&direction=NEXT");
+		assertReadMoreButtonHref(doc, "/entries?cursor=2026-04-05T00:00:00Z&direction=NEXT");
 	}
 
 	@Test
@@ -752,7 +755,29 @@ class BlogFrontendHtmxApplicationTests {
 
 		// Read-more keeps the tag in the path (not re-emitted as a `tag=` query param)
 		// so the URL stays canonical across pages.
-		assertReadMoreButtonHref(doc, "/tags/Java/entries?cursor=2026-04-05T00%3A00%3A00Z&direction=NEXT");
+		assertReadMoreButtonHref(doc, "/tags/Java/entries?cursor=2026-04-05T00:00:00Z&direction=NEXT");
+	}
+
+	@Test
+	void tagEntriesPathReadMoreDoesNotDoubleEncodeAlreadyEncodedTagName() {
+		mockApi.stubGetJson("/entries", entriesJson(true, "2026-04-05T00:00:00Z"));
+
+		// `request.getRequestURI()` returns the path with `%20` already in place. The
+		// read-more URL must keep that as `%20` — not re-encode the `%` itself into
+		// `%2520`, which would break the link. RestTestClient.uri(String) treats the
+		// argument as a URI template and re-encodes `%`, so go through `URI.create` to
+		// send the raw path verbatim.
+		String body = this.client.get()
+			.uri(URI.create("/tags/Spring%20Boot/entries"))
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody(String.class)
+			.returnResult()
+			.getResponseBody();
+		Document doc = Jsoup.parse(Objects.requireNonNull(body));
+
+		assertReadMoreButtonHref(doc, "/tags/Spring%20Boot/entries?cursor=2026-04-05T00:00:00Z&direction=NEXT");
 	}
 
 	@Test
@@ -805,7 +830,7 @@ class BlogFrontendHtmxApplicationTests {
 		// Read-more keeps the chain in the path (not re-emitted as a `categories=` query
 		// param) so the URL stays canonical across pages.
 		assertReadMoreButtonHref(doc,
-				"/categories/Programming,Java/entries?cursor=2026-04-05T00%3A00%3A00Z&direction=NEXT");
+				"/categories/Programming,Java/entries?cursor=2026-04-05T00:00:00Z&direction=NEXT");
 	}
 
 	@Test
@@ -1117,7 +1142,7 @@ class BlogFrontendHtmxApplicationTests {
 
 		// The cumulative URL must preserve `/entries/en` so the next batch is fetched
 		// from the English tenant, not the default one.
-		assertReadMoreButtonHref(doc, "/entries/en?cursor=2026-04-05T00%3A00%3A00Z&direction=NEXT");
+		assertReadMoreButtonHref(doc, "/entries/en?cursor=2026-04-05T00:00:00Z&direction=NEXT");
 	}
 
 	@Test
