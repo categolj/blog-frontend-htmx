@@ -1164,13 +1164,21 @@ a:hover {
   gap: 0.4rem;
 }
 .about-contact {
-  display: inline-block;
-  padding: 0.1em 0.55em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.2em 0.6em;
   font-size: 0.75rem;
   color: var(--fg-muted);
   border: 1px solid var(--border);
   border-radius: 3px;
   text-decoration: none;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.about-contact-icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
 }
 a.about-contact:hover {
   color: var(--fg);

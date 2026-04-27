@@ -15,7 +15,22 @@
       <h2 class="about-name">{{profile.name}}</h2>
       <p class="about-role">{{profile.title}}</p>
       <ul class="about-contacts">
-        <li><a class="about-contact" href="{{blog.xUrl}}">{{blog.xHandle}}</a></li>
+        <li><a class="about-contact" href="{{blog.xUrl}}" target="_blank" rel="noopener" aria-label="X (Twitter)">
+          <svg class="about-contact-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#brand-x"/></svg>
+          <span>{{blog.xHandle}}</span>
+        </a></li>
+        <li><a class="about-contact" href="{{profile.blueskyUrl}}" target="_blank" rel="noopener" aria-label="Bluesky">
+          <svg class="about-contact-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#brand-bluesky"/></svg>
+          <span>@{{profile.blueskyHandle}}</span>
+        </a></li>
+        <li><a class="about-contact" href="{{profile.githubUrl}}" target="_blank" rel="noopener" aria-label="GitHub">
+          <svg class="about-contact-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#brand-github"/></svg>
+          <span>@{{profile.githubHandle}}</span>
+        </a></li>
+        <li><a class="about-contact" href="{{profile.linkedinUrl}}" target="_blank" rel="noopener" aria-label="LinkedIn">
+          <svg class="about-contact-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#brand-linkedin"/></svg>
+          <span>LinkedIn</span>
+        </a></li>
         <li><span class="about-contact">{{profile.email}}</span></li>
       </ul>
       <p class="about-tagline">

@@ -854,7 +854,11 @@ class BlogFrontendHtmxApplicationTests {
 		assertThat(requireSelected(about, "img.about-avatar").attr("src"))
 			.isEqualTo("https://avatars.githubusercontent.com/u/106908?s=200");
 		assertThat(about.select(".about-contact")).extracting(Element::text)
-			.containsExactly("@making", "makingx [at] gmail.com");
+			.containsExactly("@making", "@ik.am", "@making", "LinkedIn", "makingx [at] gmail.com");
+		// Linked social profiles resolve to the canonical URLs for each platform.
+		assertThat(about.select("a.about-contact")).extracting(e -> e.attr("href"))
+			.containsExactly("https://x.com/making", "https://bsky.app/profile/ik.am", "https://github.com/making",
+					"https://www.linkedin.com/in/toshiaki-maki/");
 
 		// Every company appears as an org entry; UTokyo appears in Education.
 		assertThat(about.select(".about-timeline-org")).extracting(Element::text)
