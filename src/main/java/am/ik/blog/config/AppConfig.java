@@ -28,7 +28,7 @@ public class AppConfig {
 	@Bean
 	public RestClientCustomizer restClientCustomizer(Logbook logbook) {
 		ExponentialBackOff backOff = new ExponentialBackOff(1_000, 1.5);
-		backOff.setMaxElapsedTime(12_000);
+		backOff.setMaxElapsedTime(6_000);
 		CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.of(CircuitBreakerConfig.builder()
 			.slidingWindowSize(20)
 			.minimumNumberOfCalls(5)
