@@ -54,6 +54,7 @@ class BlogFrontendHtmxApplicationTests {
 	static class FixedTimeConfig {
 
 		@Bean
+		@Primary
 		InstantSource testInstantSource() {
 			return () -> FIXED_NOW;
 		}
