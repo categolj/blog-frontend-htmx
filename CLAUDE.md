@@ -103,6 +103,23 @@ every heading. The heading ids must be generated with the same
 `IdGenerator.builder().build()` config that `HeadingAnchorExtension` uses — if the two
 diverge, the TOC links will miss their anchors.
 
+### Page language rides on `Content-Language`
+
+`hx-boost` swaps only `<body>`'s inner HTML, so the response document's own
+`<html lang>` is thrown away — after a boosted hop from a Japanese entry to its English
+counterpart the page would keep announcing itself as Japanese. `lang-sync.js` mirrors the
+response's `Content-Language` onto `<html>`, but only for swaps targeting `<body>`: a
+partial is rendered by its own controller and reports the site default even while the
+surrounding page is English.
+
+The header is not set directly. `DispatcherServlet` stamps the resolved locale onto the
+response with `setLocale` immediately before rendering, which overwrites anything an
+interceptor wrote in `postHandle`. So `WebConfig` contributes a `localeResolver` that
+resolves from the `htmlLang` the interceptor recorded on the request — one model
+attribute driving both `<html lang>` and the header, and `Content-Language` finally
+describes the response instead of echoing the client's `Accept-Language`. Handlers that
+render no view (raw markdown, RSS, sitemap) fall back to the site's primary language.
+
 ### Fonts and look
 
 Site-wide font is serif (`--font-serif`). The article header (breadcrumbs, title, meta) is

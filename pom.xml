@@ -350,6 +350,7 @@
                                 <include>back-to-top.js</include>
                                 <include>header-particles.js</include>
                                 <include>error-toast.js</include>
+                                <include>lang-sync.js</include>
                                 <include>counter-error.js</include>
                                 <include>giscus.js</include>
                                 <include>note-form-loading.js</include>

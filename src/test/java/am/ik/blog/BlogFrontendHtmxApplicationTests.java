@@ -1370,6 +1370,48 @@ class BlogFrontendHtmxApplicationTests {
 	}
 
 	@Test
+	void renderedPagesDeclareTheirLanguageInTheContentLanguageHeader() {
+		mockApi.stubGetJson("/entries", ENTRIES_JSON_NO_NEXT);
+		mockApi.stubGetJson("/tenants/en/entries/77", SAMPLE_EN_ENTRY_WITH_CONTENT_JSON);
+
+		// A boosted navigation swaps <body>'s innerHTML, so the response's own
+		// `<html lang>` never lands in the DOM — lang-sync.js mirrors this header onto
+		// <html> instead. The header carries the same value the layout renders, so the
+		// two can never drift.
+		this.client.get()
+			.uri("/entries")
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectHeader()
+			.valueEquals(HttpHeaders.CONTENT_LANGUAGE, "ja");
+
+		this.client.get()
+			.uri("/entries/77/en")
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectHeader()
+			.valueEquals(HttpHeaders.CONTENT_LANGUAGE, "en");
+	}
+
+	@Test
+	void notTranslatedNoticeDeclaresEnglishInTheContentLanguageHeader() {
+		mockApi.stubGetNotFound("/tenants/en/entries/42");
+		mockApi.stubGetJson("/entries/42", SAMPLE_ENTRY_WITH_CONTENT_JSON);
+
+		// The notice is written in English and is the body of the EN URL's 404 — the
+		// error status does not change the language of what was rendered.
+		this.client.get()
+			.uri("/entries/42/en")
+			.exchange()
+			.expectStatus()
+			.isNotFound()
+			.expectHeader()
+			.valueEquals(HttpHeaders.CONTENT_LANGUAGE, "en");
+	}
+
+	@Test
 	void upstreamRequestsIncludeBasicAuthHeaderFromProperties() {
 		mockApi.stubGetJson("/entries", ENTRIES_JSON_NO_NEXT);
 
