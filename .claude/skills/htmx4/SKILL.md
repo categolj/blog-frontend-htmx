@@ -1,5 +1,5 @@
 ---
-name: htmx-guidance
+name: htmx4
 description: Use when writing HTML with htmx, building htmx-powered pages, or answering questions about htmx patterns and best practices. Covers htmx 4 attributes, events, swap strategies, and common UI patterns.
 ---
 
