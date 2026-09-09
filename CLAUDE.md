@@ -328,6 +328,9 @@ their consumers after). Third-party vendored libraries live under
 `src/main/resources/static/js/vendor/` (e.g. `vendor/htmx.min.js`,
 `vendor/highlight.min.js`); user-authored scripts sit directly under `static/js/`.
 `vendor/htmx.min.js` is the exception to the bundle — see "Modern client JS".
+`ClientScriptBundleTest` fails if a script is missing from either list, or if the two
+disagree on order; a script that must stay out of the bundle is declared, with its
+reason, in that test's `NOT_BUNDLED` map.
 
 Follow the convention used by the existing files:
 
