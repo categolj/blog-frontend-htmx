@@ -34,7 +34,15 @@
           <span class="views-label">Views</span>
         </span>
         {{#languageToggle}}
-        <a class="lang-badge" href="{{url}}" aria-label="Switch language" title="Switch language">
+        <!--
+          hx-status:404 opts this boosted link out of the layout's noSwap "4xx" rule.
+          An entry without a translation answers 404 whose body IS the "Not Translated"
+          notice; without this the response is dropped and only an error toast shows.
+          The exact code is required — "4xx" would lose to noSwap, which htmx checks
+          first at that step.
+        -->
+        <a class="lang-badge" href="{{url}}" aria-label="Switch language" title="Switch language"
+           hx-status:404="swap:innerHTML">
           <svg class="lang-badge-icon" aria-hidden="true"><use href="{{#src}}/img/icons.svg{{/src}}#globe"/></svg>
           <span>{{label}}</span>
         </a>

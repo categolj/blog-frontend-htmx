@@ -62,7 +62,12 @@ ways that shape this codebase:
   sets `noSwap` back to `[204, 304, "4xx", "5xx"]`: upstream failures arrive as whole
   error documents, and swapping one into a `<span>` (views counter) or the entry list
   would be worse than the toast that `error-toast.js` renders instead. The same meta tag
-  carries `defaultTimeout`.
+  carries `defaultTimeout`. A response whose error body *is* the page — the "Not
+  Translated" notice served as the 404 of an untranslated EN entry — opts back in with
+  `hx-status:404` on the triggering element. The code has to be exact: htmx checks
+  `noSwap` before the attribute at each step of its `404` → `40x` → `4xx` lookup, so
+  `hx-status:4xx` would lose. `error-toast.js` mirrors that lookup and stays quiet for a
+  status the element handles itself.
 
 `Htmx#isPartial` still reads `HX-Request` / `HX-Boosted`, both of which htmx 4 keeps
 sending. htmx 4 also offers `HX-Request-Type: full|partial`, but relying on it would break

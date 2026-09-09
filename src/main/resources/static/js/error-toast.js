@@ -82,6 +82,25 @@
   // handles its own silent recovery, so a toast would be noise.
   const isSilent = (e) => e.target?.classList?.contains("views-counter") ?? false;
 
+  // An element carrying hx-status:<code> handles that status itself: htmx swaps
+  // the response body in, so the page already explains what happened (e.g. the
+  // "Not Translated" notice served as the 404 of an untranslated EN entry) and a
+  // toast on top of it is noise. Mirrors htmx's own resolution order — exact
+  // status, then 40x, then 4xx — where the first match in noSwap or in an
+  // hx-status attribute wins, so a code already listed in noSwap never reaches
+  // the attribute.
+  const handlesStatus = (ctx) => {
+    const el = ctx?.sourceElement;
+    const status = String(ctx?.response?.status ?? "");
+    if (!el?.hasAttribute || status.length !== 3) return false;
+    const noSwap = (htmx.config.noSwap ?? []).map(String);
+    for (const code of [status, `${status.slice(0, 2)}x`, `${status[0]}xx`]) {
+      if (noSwap.includes(code)) return false;
+      if (el.hasAttribute(`hx-status:${code}`)) return true;
+    }
+    return false;
+  };
+
   // htmx 4 folds sendError / timeout / swapError into a single htmx:error. The
   // three cases are still distinguishable from the detail: a request that ran past
   // htmx.config.defaultTimeout is aborted, surfacing as an AbortError (nothing else
@@ -103,7 +122,7 @@
   });
 
   document.addEventListener("htmx:response:error", (e) => {
-    if (isSilent(e)) return;
+    if (isSilent(e) || handlesStatus(e.detail?.ctx)) return;
     const status = e.detail?.ctx?.response?.status ?? 0;
     if (status >= 500) {
       show(`The server returned an error (${status}). Please try again later.`);

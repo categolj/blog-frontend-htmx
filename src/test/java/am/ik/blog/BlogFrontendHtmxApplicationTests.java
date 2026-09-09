@@ -1295,6 +1295,22 @@ class BlogFrontendHtmxApplicationTests {
 	}
 
 	@Test
+	void languageToggleOptsOutOfTheGlobal4xxNoSwapSoTheNotTranslatedNoticeRenders() {
+		mockApi.stubGetJson("/entries/42", SAMPLE_ENTRY_WITH_CONTENT_JSON);
+
+		Document doc = parsePage("/entries/42", false);
+
+		// The badge is a boosted link, and the EN URL answers 404 whenever the entry
+		// has no translation yet — the "Not Translated" notice IS that 404's body.
+		// The layout's htmx-config lists "4xx" in noSwap (upstream failures must not
+		// land inside a partial), which would drop the notice and leave only an error
+		// toast. hx-status:404 wins over noSwap for this one element, so the boosted
+		// click renders the notice exactly like a direct visit to the URL does.
+		Element langBadge = requireSelected(doc, "article.entry .entry-meta a.lang-badge");
+		assertThat(langBadge.attr("hx-status:404")).isEqualTo("swap:innerHTML");
+	}
+
+	@Test
 	void englishEntryDetailIncludesLanguageToggleToJapaneseCounterpart() {
 		mockApi.stubGetJson("/tenants/en/entries/77", SAMPLE_EN_ENTRY_WITH_CONTENT_JSON);
 
