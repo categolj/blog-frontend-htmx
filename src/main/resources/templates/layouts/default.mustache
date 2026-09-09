@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme" content="light dark">
+  <!--
+    noSwap keeps htmx 4 from swapping 4xx/5xx bodies into the page. Upstream errors
+    surface as whole error documents, which would land inside a <span> (views counter)
+    or the entry list; error-toast.js / counter-error.js render the failure instead.
+    defaultTimeout is 15s (htmx default: 60s) — long enough for a cold upstream API
+    call, short enough that a hung connection still reports back to the user.
+  -->
+  <meta name="htmx-config" content='{"noSwap": [204, 304, "4xx", "5xx"], "defaultTimeout": 15000}'>
   <title>{{#pageTitle}}{{.}} · {{/pageTitle}}{{blog.name}}</title>
   {{$metaDescription}}<meta name="description" content="{{blog.description}}">{{/metaDescription}}
   {{$metaSocial}}
@@ -40,12 +48,12 @@
       } catch {}
     }
   </script>
+  <!-- source: https://unpkg.com/htmx.org@4.0.0/dist/htmx.min.js -->
+  <script src="{{#src}}/js/vendor/htmx.min.js{{/src}}" defer></script>
   {{#bundledJs}}
   <script src="{{#src}}/js/app.min.js{{/src}}" defer></script>
   {{/bundledJs}}
   {{^bundledJs}}
-  <!-- source: https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js -->
-  <script src="{{#src}}/js/vendor/htmx.min.js{{/src}}" defer></script>
   <!-- source: https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js -->
   <script src="{{#src}}/js/vendor/highlight.min.js{{/src}}" defer></script>
   <script src="{{#src}}/js/code-highlight.js{{/src}}" defer></script>
@@ -63,7 +71,7 @@
   <script src="{{#src}}/js/note-form-loading.js{{/src}}" defer></script>
   {{/bundledJs}}
 </head>
-<body hx-boost="true">
+<body hx-boost:inherited="true">
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="site-header">
     <div class="container site-header-inner">

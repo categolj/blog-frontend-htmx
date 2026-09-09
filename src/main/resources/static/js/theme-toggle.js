@@ -62,5 +62,5 @@
     updateButtons();
   }
 
-  document.addEventListener("htmx:afterSwap", updateButtons);
+  document.addEventListener("htmx:after:swap", updateButtons);
 }

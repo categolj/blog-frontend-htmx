@@ -29,5 +29,8 @@
   }
   // The site uses hx-boost on <body>, which replaces the body on navigation.
   // Re-scan after every swap so freshly rendered forms get their listener.
-  document.body.addEventListener('htmx:afterSwap', (e) => init(e.target));
+  // htmx 4 dispatches htmx:after:swap on the source element rather than on a
+  // container enclosing the new nodes, so scan from the document; the
+  // dataset guard makes that a no-op for already-wired forms.
+  document.addEventListener('htmx:after:swap', () => init(document));
 }

@@ -35,7 +35,8 @@ public class AssetsVersion {
 	 * the default layout are added. Only site-wide bundles belong here — per-page assets
 	 * are not cache validators for the entry page's HTML envelope.
 	 */
-	private static final List<String> ASSET_PATHS = List.of("/js/app.min.js", "/css/style.css");
+	private static final List<String> ASSET_PATHS = List.of("/js/app.min.js", "/js/vendor/htmx.min.js",
+			"/css/style.css");
 
 	private static final String PENDING_DIGEST = "0";
 

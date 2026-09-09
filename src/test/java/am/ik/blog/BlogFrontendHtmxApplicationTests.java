@@ -160,6 +160,25 @@ class BlogFrontendHtmxApplicationTests {
 	}
 
 	@Test
+	void layoutWiresHtmxOnFullPages() {
+		mockApi.stubGetJson("/entries", ENTRIES_JSON_NO_NEXT);
+
+		Document doc = parsePage("/entries", false);
+
+		// htmx 4 inherits nothing implicitly: without the `:inherited` suffix none of
+		// the descendant links or forms would be boosted.
+		assertThat(doc.body().attr("hx-boost:inherited")).isEqualTo("true");
+		// 4xx/5xx bodies must not be swapped in — upstream failures render as whole
+		// error documents and the client surfaces them as a toast instead.
+		assertThat(requireSelected(doc, "meta[name=htmx-config]").attr("content"))
+			.isEqualTo("{\"noSwap\": [204, 304, \"4xx\", \"5xx\"], \"defaultTimeout\": 15000}");
+		// htmx loads ahead of every other script, from its own file: Closure Compiler
+		// cannot parse htmx 4's private class fields, so it is not in app.min.js.
+		assertThat(doc.select("script[src]").eachAttr("src").getFirst())
+			.matches("/js/vendor/htmx\\.min(-[0-9a-f]+)?\\.js");
+	}
+
+	@Test
 	void entryDetailPageRenders() {
 		mockApi.stubGetJson("/entries/42", SAMPLE_ENTRY_WITH_CONTENT_JSON);
 
@@ -1407,7 +1426,7 @@ class BlogFrontendHtmxApplicationTests {
 	 */
 	private static void assertIsFragment(Document doc) {
 		assertThat(doc.head().children()).as("synthesized empty head means no layout chrome").isEmpty();
-		assertThat(doc.body().attr("hx-boost")).as("layout's hx-boost attribute should be absent").isEmpty();
+		assertThat(doc.body().attr("hx-boost:inherited")).as("layout's hx-boost attribute should be absent").isEmpty();
 	}
 
 	private byte[] rawBytes(String path) {

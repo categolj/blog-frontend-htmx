@@ -3,10 +3,10 @@
 // htmx request is in flight, as a subtle global loading indicator.
 //
 // State is mirrored onto :root[data-htmx-loading] so it survives hx-boost body
-// swaps. The clear-side listens to htmx:afterSettle / error / timeout rather
-// than htmx:afterRequest, for the same reason search-indicator.js does — the
-// triggering element may be detached by the swap before afterRequest fires, so
-// the event never bubbles to document.
+// swaps. The clear-side listens to htmx:after:swap / error events rather than
+// htmx:finally:request, for the same reason search-indicator.js does — the
+// triggering element may be detached by the swap before finally:request fires,
+// so that event never bubbles to document.
 //
 // The canvas is lazily (re)inserted into .site-header on each animation tick,
 // which covers the case where .site-header is recreated by a body swap.
@@ -135,7 +135,7 @@
     rafId = requestAnimationFrame(step);
   };
 
-  document.addEventListener("htmx:beforeRequest", () => {
+  document.addEventListener("htmx:before:request", () => {
     loading = true;
     document.documentElement.dataset.htmxLoading = "1";
     startLoop();
@@ -147,13 +147,7 @@
     // Keep the loop running until in-flight particles finish their pop.
     startLoop();
   };
-  for (const ev of [
-    "htmx:afterSettle",
-    "htmx:responseError",
-    "htmx:sendError",
-    "htmx:timeout",
-    "htmx:swapError",
-  ]) {
+  for (const ev of ["htmx:after:swap", "htmx:response:error", "htmx:error"]) {
     document.addEventListener(ev, finish);
   }
 }

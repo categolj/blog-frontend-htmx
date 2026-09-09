@@ -7,14 +7,11 @@
 // Listeners are bound to document so hx-boost navigation and all hx-*
 // requests are covered. The toast element is injected lazily on the first
 // error so the idle DOM stays clean.
+//
+// The request timeout that produces the "didn't respond in time" case is set
+// as htmx.config.defaultTimeout in the <meta name="htmx-config"> of the
+// default layout.
 {
-  // htmx has no default request timeout, so a process that accepts TCP but
-  // never responds would hang forever. 15s is long enough for cold upstream
-  // API calls while still surfacing as htmx:timeout within a reasonable bound.
-  if (typeof htmx !== "undefined") {
-    htmx.config.timeout = 15000;
-  }
-
   const HIDE_MS = 8000;
   let toast = null;
   let hideTimer = null;
@@ -85,14 +82,29 @@
   // handles its own silent recovery, so a toast would be noise.
   const isSilent = (e) => e.target?.classList?.contains("views-counter") ?? false;
 
-  document.addEventListener("htmx:sendError", (e) => {
+  // htmx 4 folds sendError / timeout / swapError into a single htmx:error. The
+  // three cases are still distinguishable from the detail: a request that ran past
+  // htmx.config.defaultTimeout is aborted, surfacing as an AbortError (nothing else
+  // in this app aborts requests — the default "queue first" sync strategy never
+  // does), and a failure raised after a response arrived is a swap failure.
+  const failureMessage = (detail) => {
+    if (detail?.error?.name === "AbortError") {
+      return "The server didn't respond in time. Please try again.";
+    }
+    if (detail?.ctx?.response) {
+      return "Failed to update the page.";
+    }
+    return "Can't reach the server. Please try again in a moment.";
+  };
+
+  document.addEventListener("htmx:error", (e) => {
     if (isSilent(e)) return;
-    show("Can't reach the server. Please try again in a moment.");
+    show(failureMessage(e.detail));
   });
 
-  document.addEventListener("htmx:responseError", (e) => {
+  document.addEventListener("htmx:response:error", (e) => {
     if (isSilent(e)) return;
-    const status = e.detail?.xhr?.status ?? 0;
+    const status = e.detail?.ctx?.response?.status ?? 0;
     if (status >= 500) {
       show(`The server returned an error (${status}). Please try again later.`);
     }
@@ -102,15 +114,5 @@
     else {
       show("The request failed.");
     }
-  });
-
-  document.addEventListener("htmx:timeout", (e) => {
-    if (isSilent(e)) return;
-    show("The server didn't respond in time. Please try again.");
-  });
-
-  document.addEventListener("htmx:swapError", (e) => {
-    if (isSilent(e)) return;
-    show("Failed to update the page.");
   });
 }

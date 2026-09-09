@@ -75,5 +75,9 @@
   else {
     init(document);
   }
-  document.addEventListener("htmx:afterSwap", (e) => init(e.target));
+  // htmx 4 dispatches htmx:after:swap on the *source* element (or, when the swap
+  // detached it, on the swapped-in content) rather than on a container enclosing
+  // the new nodes, so e.target is not a usable root. Re-scan from the document —
+  // the per-node init guards make that a no-op for already-decorated nodes.
+  document.addEventListener("htmx:after:swap", () => init(document));
 }

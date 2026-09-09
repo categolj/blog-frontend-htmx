@@ -58,8 +58,9 @@ Query parameters on `/entries`:
 
 ## HTMX behaviour
 
-- `<body hx-boost="true">` turns internal navigation into background fetches while still
-  serving full HTML for direct requests and crawlers.
+- `<body hx-boost:inherited="true">` turns internal navigation into background fetches
+  while still serving full HTML for direct requests and crawlers. htmx 4 inherits nothing
+  implicitly, so the `:inherited` suffix is what passes the attribute to descendants.
 - The search input re-queries the server on input change and swaps only the `#entries`
   section.
 - The **Read more** button at the bottom of the list fetches the next cursor page and
@@ -84,7 +85,7 @@ Client-side add-ons (no server dependency):
   `prefers-color-scheme`)
 - A copy button in the top-right corner of every `<pre>` block
 
-Both re-run after HTMX swaps via the `htmx:afterSwap` event.
+Both re-run after HTMX swaps via the `htmx:after:swap` event.
 
 ## Configuration
 

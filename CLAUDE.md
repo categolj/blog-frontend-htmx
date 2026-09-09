@@ -41,10 +41,32 @@ Guidance for working in this repository. See `README.md` for user-facing usage.
 ### SSR-first with HTMX enhancements
 
 The API returns JSON, but crawlers need rendered HTML. Every page is server-rendered as a
-full document; HTMX only replaces parts for interactivity. `hx-boost` on `<body>`
-intercepts link clicks after the first load, so boosted navigation still receives full
-HTML (and the server returns it unchanged). Targeted partials (search, Read more) use
+full document; HTMX only replaces parts for interactivity. `hx-boost:inherited` on
+`<body>` intercepts link clicks after the first load, so boosted navigation still receives
+full HTML (and the server returns it unchanged). Targeted partials (search, Read more) use
 `hx-get` on a specific target and the controller returns a fragment template.
+
+### htmx 4 conventions
+
+The site runs htmx 4 (`static/js/vendor/htmx.min.js`), which differs from htmx 2 in three
+ways that shape this codebase:
+
+- **Nothing is inherited implicitly.** An attribute meant for descendants needs the
+  `:inherited` suffix — hence `<body hx-boost:inherited="true">`. Plain `hx-boost="false"`
+  on a descendant still opts that element out.
+- **Events are colon-separated and carry a request context.** `htmx:after:swap`,
+  `htmx:before:request`, `htmx:response:error`, and `htmx:error` (which absorbs htmx 2's
+  sendError / timeout / swapError) are the ones this site listens for; the payload is
+  `e.detail.ctx`, not `e.detail.elt` / `e.detail.xhr`.
+- **Every response swaps by default.** `<meta name="htmx-config">` in the default layout
+  sets `noSwap` back to `[204, 304, "4xx", "5xx"]`: upstream failures arrive as whole
+  error documents, and swapping one into a `<span>` (views counter) or the entry list
+  would be worse than the toast that `error-toast.js` renders instead. The same meta tag
+  carries `defaultTimeout`.
+
+`Htmx#isPartial` still reads `HX-Request` / `HX-Boosted`, both of which htmx 4 keeps
+sending. htmx 4 also offers `HX-Request-Type: full|partial`, but relying on it would break
+any client still running a cached htmx 2 bundle.
 
 ### Append-style "Read more" instead of Prev/Next
 
@@ -148,11 +170,16 @@ Client scripts target evergreen browsers and are written in ES2020+ directly —
 style — don't regress to `var`, `Array.prototype.slice.call`, `getAttribute("data-*")`,
 or `|| ""` fallbacks.
 
+Closure Compiler's own parser stops short of private class fields (`#foo`) at every
+optimization level, which is why `vendor/htmx.min.js` is excluded from the bundle and
+loaded as its own `<script>`. Any future vendored library written with them has to go the
+same way.
+
 ### Syntax highlighting via client JS
 
 Highlighting is done by `highlight.js` on the client. GitHub light/dark themes are loaded
 with `media="(prefers-color-scheme: …)"` so the browser picks the right one automatically.
-Both `/js/code-highlight.js` and `/js/code-copy.js` re-run on `htmx:afterSwap` so swapped
+Both `/js/code-highlight.js` and `/js/code-copy.js` re-run on `htmx:after:swap` so swapped
 content gets the same treatment.
 
 The `.prose pre code.hljs` rule explicitly neutralises the padding, background, and
@@ -188,14 +215,15 @@ response. Two consequences shape `search-indicator.js`:
    body swap, so a class on it would disappear mid-request and the spinner would
    blink out. `<html>` survives the swap, so CSS keyed off `:root[data-searching]`
    stays valid across the old and new forms.
-2. The clear listener is bound to `htmx:afterSettle`, not `htmx:afterRequest`.
-   `afterRequest` is dispatched on the triggering element (the form), which is
+2. The clear listener is bound to `htmx:after:swap`, not `htmx:finally:request`.
+   `finally:request` is dispatched on the triggering element (the form), which is
    already detached by the time it fires — the event never bubbles to the
-   document-level listener, leaving `data-searching` stuck. `afterSettle` fires on
-   the swap target (body), which is still in the DOM.
+   document-level listener, leaving `data-searching` stuck. htmx re-points
+   `after:swap` at the swap target (body) when the source element did not survive
+   the swap, so that one always reaches the document.
 
 The listener also toggles `disabled` on the form's inputs during the request to block
-re-submits. htmx collects form data before `htmx:beforeRequest` fires, so disabling
+re-submits. htmx collects form data before `htmx:before:request` fires, so disabling
 there does not drop the submitted query.
 
 ## Development workflows
@@ -277,6 +305,7 @@ Scripts under `src/main/resources/static/js/` are concatenated into `app.min.js`
 their consumers after). Third-party vendored libraries live under
 `src/main/resources/static/js/vendor/` (e.g. `vendor/htmx.min.js`,
 `vendor/highlight.min.js`); user-authored scripts sit directly under `static/js/`.
+`vendor/htmx.min.js` is the exception to the bundle — see "Modern client JS".
 
 Follow the convention used by the existing files:
 
@@ -284,7 +313,9 @@ Follow the convention used by the existing files:
 2. Define an `init(root)` (or similarly named) function that decorates nodes under
    `root`, gated by a `dataset.*Init` flag on each decorated node so re-entry is a no-op.
 3. Run init on `DOMContentLoaded` (or immediately if the document is already loaded)
-   *and* on `document.body`'s `htmx:afterSwap` event, passing `e.target` as the root.
-   HTMX partial swaps inject fresh DOM that the initial pass never saw, so re-scanning
-   is necessary — but the scan will also revisit already-initialised nodes, and those
-   must be skipped.
+   *and* on `document`'s `htmx:after:swap` event, re-scanning from `document`. HTMX
+   partial swaps inject fresh DOM that the initial pass never saw, so re-scanning is
+   necessary — but the scan will also revisit already-initialised nodes, and those must
+   be skipped. Do not scope the rescan to `e.target`: htmx 4 dispatches `after:swap` on
+   the source element, or on the swapped-in content when the swap detached it, so the
+   event target is not a container enclosing the new nodes.

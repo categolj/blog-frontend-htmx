@@ -10,9 +10,10 @@
 //
 // Scope: only boosted navigations (hx-boost on body covers <a> clicks and
 // form submits). Targeted hx-get / hx-post requests like the Load more
-// button or the counter have their own local indicators and are excluded
-// via e.detail.boosted. The header search form is also excluded because
-// search-indicator.js drives its own spinner.
+// button or the counter have their own local indicators and are excluded by
+// the HX-Boosted request header htmx sets on boosted requests only. The
+// header search form is also excluded because search-indicator.js drives its
+// own spinner.
 //
 // The instant "your click was received" feedback for the clicked link
 // itself is handled in CSS via the htmx-request class htmx adds to the
@@ -70,30 +71,28 @@
     }, DONE_HOLD_MS);
   };
 
-  document.addEventListener("htmx:beforeRequest", (e) => {
-    const elt = e.detail?.elt;
-    const xhr = e.detail?.xhr;
-    if (!xhr || !e.detail?.boosted || isSearchTrigger(elt)) return;
-    // Track by XHR identity — afterSettle for a boosted nav fires on the
-    // swap target (body), not the original anchor (which has been replaced),
-    // so the elt is not stable across events. The xhr instance is.
-    tracked.add(xhr);
+  const isBoosted = (ctx) => ctx?.request?.headers?.["HX-Boosted"] === "true";
+
+  document.addEventListener("htmx:before:request", (e) => {
+    const ctx = e.detail?.ctx;
+    if (!ctx || !isBoosted(ctx) || isSearchTrigger(ctx.sourceElement)) return;
+    // Track by request-context identity — htmx:after:swap for a boosted nav is
+    // dispatched on the swap target (body) once the original anchor has been
+    // replaced, so the element is not stable across events. The ctx object is.
+    tracked.add(ctx);
     start();
   });
 
   const onDone = (e) => {
-    const xhr = e.detail?.xhr;
-    if (!xhr || !tracked.has(xhr)) return;
-    tracked.delete(xhr);
+    const ctx = e.detail?.ctx;
+    if (!ctx || !tracked.has(ctx)) return;
+    tracked.delete(ctx);
     stop();
   };
-  for (const ev of [
-    "htmx:afterSettle",
-    "htmx:responseError",
-    "htmx:sendError",
-    "htmx:timeout",
-    "htmx:abort",
-  ]) {
+  // htmx:error covers every transport failure (unreachable server, timeout);
+  // htmx:response:error covers 4xx/5xx, which the noSwap config keeps from
+  // reaching htmx:after:swap with a swap of their own.
+  for (const ev of ["htmx:after:swap", "htmx:response:error", "htmx:error"]) {
     document.addEventListener(ev, onDone);
   }
 }

@@ -16,7 +16,10 @@
     if (isCounter(e.target)) markError(e.target);
   };
 
-  for (const name of ["htmx:responseError", "htmx:sendError", "htmx:swapError", "htmx:timeout"]) {
-    document.body.addEventListener(name, handle);
+  // Both events are dispatched on the element that issued the request, and the
+  // counter is never swapped away on a failure (see the noSwap htmx config in the
+  // default layout), so it is still in the document when they bubble up here.
+  for (const name of ["htmx:response:error", "htmx:error"]) {
+    document.addEventListener(name, handle);
   }
 }

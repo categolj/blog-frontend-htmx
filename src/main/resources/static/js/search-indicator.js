@@ -4,23 +4,25 @@
 // that hx-boost performs on form submit — a class on the form itself would
 // disappear together with the form during the swap.
 //
-// Clear-side listeners use htmx:afterSettle (and error events) rather than
-// htmx:afterRequest: on a boosted form submit, the form is detached from the
-// DOM during the swap, so afterRequest — dispatched on that detached element —
-// never bubbles up to our document-level listener, leaving the spinner stuck.
+// Clear-side listeners use htmx:after:swap (and error events) rather than
+// htmx:finally:request: on a boosted form submit, the form is detached from the
+// DOM during the swap, and finally:request is dispatched on that detached
+// element, so it never bubbles up to our document-level listener and the spinner
+// would stay stuck. htmx re-points after:swap at the swap target when the source
+// element did not survive, so that one always reaches the document.
 {
-  const isSearchTrigger = (e) => {
-    const elt = e.detail?.elt ?? e.target;
-    return elt?.classList?.contains?.("search-form") ?? false;
-  };
+  const triggerOf = (e) => e.detail?.ctx?.sourceElement ?? e.target;
 
-  document.addEventListener("htmx:beforeRequest", (e) => {
+  const isSearchTrigger = (e) =>
+    triggerOf(e)?.classList?.contains?.("search-form") ?? false;
+
+  document.addEventListener("htmx:before:request", (e) => {
     if (!isSearchTrigger(e)) return;
     document.documentElement.dataset.searching = "1";
     // Disable interactive controls so the user cannot re-submit or mutate the
     // query while the request is in flight. htmx reads form data before this
     // event fires, so disabling here does not drop the submitted query.
-    const form = e.detail?.elt ?? e.target;
+    const form = triggerOf(e);
     for (const node of form.querySelectorAll("input, button")) {
       node.disabled = true;
     }
@@ -34,7 +36,7 @@
       node.disabled = false;
     }
   };
-  for (const ev of ["htmx:afterSettle", "htmx:responseError", "htmx:sendError", "htmx:timeout"]) {
+  for (const ev of ["htmx:after:swap", "htmx:response:error", "htmx:error"]) {
     document.addEventListener(ev, clear);
   }
 }

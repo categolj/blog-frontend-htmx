@@ -7,7 +7,7 @@
 // navigation. Keep the scroll listener at the window level (bound once) and
 // re-query the current button each tick — this avoids retaining references
 // to detached nodes across swaps. The per-button click wiring is guarded by
-// dataset.backToTopInit so the htmx:afterSwap rescan is a no-op for an
+// dataset.backToTopInit so the htmx:after:swap rescan is a no-op for an
 // already-wired button.
 {
   const THRESHOLD = 400;
@@ -39,5 +39,9 @@
     init(document);
   }
 
-  document.body.addEventListener("htmx:afterSwap", (e) => init(e.target));
+  // htmx 4 dispatches htmx:after:swap on the *source* element (or, when the swap
+  // detached it, on the swapped-in content) rather than on a container enclosing
+  // the new nodes, so e.target is not a usable root. Re-scan from the document —
+  // the per-node init guards make that a no-op for already-decorated nodes.
+  document.addEventListener("htmx:after:swap", () => init(document));
 }
