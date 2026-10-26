@@ -296,7 +296,7 @@
             <plugin>
                 <groupId>am.ik.maven</groupId>
                 <artifactId>nullability-maven-plugin</artifactId>
-                <version>0.4.0</version>
+                <version>0.5.2</version>
                 <extensions>true</extensions>
                 <configuration>
                     <checking>tests</checking>
@@ -374,7 +374,7 @@
             <plugin>
                 <groupId>am.ik.maven</groupId>
                 <artifactId>compression-maven-plugin</artifactId>
-                <version>0.2.1</version>
+                <version>0.3.0</version>
                 <executions>
                     <execution>
                         <goals>
