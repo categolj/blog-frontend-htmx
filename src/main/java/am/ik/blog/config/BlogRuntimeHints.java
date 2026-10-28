@@ -67,8 +67,28 @@ public class BlogRuntimeHints implements RuntimeHintsRegistrar {
 			GiscusProps.class, CategoryCrumb.class, LanguageToggle.class, LanguageToggle.Link.class,
 			NoteListItem.class };
 
+	/**
+	 * Caffeine resolves its internal node class at runtime via {@code Class.forName} from
+	 * the builder flags ({@code com.github.benmanes.caffeine.cache.NodeFactory}). The
+	 * name for the builder used by {@code EntryCache} — {@code maximumSize} only, strong
+	 * keys and values, no weigher, no expiry — is {@code PSMS}. If the Caffeine builder
+	 * flags ever change, the native run fails fast with a {@code ClassNotFoundException}
+	 * whose message names the new class; update this constant to match. Registered
+	 * through {@link Class#forName} (build time runs on the JVM) so a class that no
+	 * longer exists fails the native build instead of the production startup.
+	 */
+	private static final String CAFFEINE_NODE_CLASS = "com.github.benmanes.caffeine.cache.PSMS";
+
 	@Override
 	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
+		try {
+			hints.reflection()
+				.registerType(Class.forName(CAFFEINE_NODE_CLASS), MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+						MemberCategory.INVOKE_DECLARED_METHODS, MemberCategory.ACCESS_DECLARED_FIELDS);
+		}
+		catch (ClassNotFoundException ex) {
+			throw new IllegalStateException("Caffeine node class not found: " + CAFFEINE_NODE_CLASS, ex);
+		}
 		for (Class<?> type : BINDING_TYPES) {
 			hints.reflection()
 				.registerType(type, MemberCategory.INVOKE_DECLARED_CONSTRUCTORS, MemberCategory.INVOKE_DECLARED_METHODS,
