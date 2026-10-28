@@ -3,6 +3,7 @@ package am.ik.blog.config;
 import java.time.Duration;
 import java.time.InstantSource;
 import java.util.List;
+import java.util.Set;
 
 import am.ik.spring.http.client.RetryableClientHttpRequestInterceptor;
 import am.ik.spring.http.client.circuitbreaker.CircuitBreakerClientHttpRequestInterceptor;
@@ -28,17 +29,25 @@ public class AppConfig {
 		return InstantSource.system();
 	}
 
+	/**
+	 * Exposed as a bean so tests can reset the breaker state between scenarios (the
+	 * breakers are keyed by request host and shared by every RestClient in the app).
+	 */
 	@Bean
-	public RestClientCustomizer restClientCustomizer(Logbook logbook) {
-		ExponentialBackOff backOff = new ExponentialBackOff(1_000, 1.5);
-		backOff.setMaxElapsedTime(6_000);
-		CircuitBreakerRegistry circuitBreakerRegistry = CircuitBreakerRegistry.of(CircuitBreakerConfig.builder()
+	public CircuitBreakerRegistry circuitBreakerRegistry() {
+		return CircuitBreakerRegistry.of(CircuitBreakerConfig.builder()
 			.slidingWindowSize(20)
 			.minimumNumberOfCalls(5)
 			.failureRateThreshold(50f)
 			.waitDurationInOpenState(Duration.ofMinutes(1))
 			.permittedNumberOfCallsInHalfOpenState(5)
 			.build());
+	}
+
+	@Bean
+	public RestClientCustomizer restClientCustomizer(Logbook logbook, CircuitBreakerRegistry circuitBreakerRegistry) {
+		ExponentialBackOff backOff = new ExponentialBackOff(1_000, 1.5);
+		backOff.setMaxElapsedTime(6_000);
 		List<ClientHttpRequestInterceptor> interceptors = clientHttpRequestInterceptors(logbook, circuitBreakerRegistry,
 				backOff);
 		return restClientBuilder -> interceptors.forEach(restClientBuilder::requestInterceptor);
@@ -59,7 +68,12 @@ public class AppConfig {
 					.registry(circuitBreakerRegistry)
 					.lifecycle(LoggingCircuitBreakerLifecycle.builder().build())
 					.build(),
-				new RetryableClientHttpRequestInterceptor(backOff));
+				// Response-status retries (the library defaults retry 5xx for ~6s) are
+				// disabled: the local entry cache serves stale content on upstream
+				// failure, so burning the back-off before every fallback would delay
+				// each stale response and slow the breaker's failure accounting. Only
+				// the IOException predicates (timeouts, connect errors) still retry.
+				new RetryableClientHttpRequestInterceptor(backOff, Set.of()));
 	}
 
 }

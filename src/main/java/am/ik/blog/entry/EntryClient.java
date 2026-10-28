@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,29 @@ public class EntryClient {
 
 	private final RestClient restClient;
 
+	// Multiple constructors exist, so the autowired one must be explicit.
+	@Autowired
 	public EntryClient(RestClient.Builder builder, EntryApiProps props) {
+		this(buildRestClient(builder, props));
+	}
+
+	/**
+	 * Transport-level constructor, visible to {@link CachingEntryClient} so the decorator
+	 * can hand the delegate's {@link RestClient} to {@code super} instead of building a
+	 * second one.
+	 */
+	EntryClient(RestClient restClient) {
+		this.restClient = restClient;
+	}
+
+	/**
+	 * Visible to {@link CachingEntryClient} for the same reason as the constructor above.
+	 */
+	RestClient restClient() {
+		return this.restClient;
+	}
+
+	private static RestClient buildRestClient(RestClient.Builder builder, EntryApiProps props) {
 		RestClient.Builder b = builder.baseUrl(props.baseUrl())
 			.defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		// Attach Basic credentials when configured. The upstream API requires auth
@@ -45,7 +68,7 @@ public class EntryClient {
 		if (StringUtils.hasText(props.username())) {
 			b = b.defaultHeaders(headers -> headers.setBasicAuth(props.username(), props.password()));
 		}
-		this.restClient = b.build();
+		return b.build();
 	}
 
 	public CursorPage<Entry> findEntries(EntryQuery query) {

@@ -1,5 +1,6 @@
 package am.ik.blog.site.web;
 
+import am.ik.blog.entry.EntryCache;
 import am.ik.blog.testsupport.MockServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,10 @@ class LlmsControllerTests {
 	@Autowired
 	RestTestClient client;
 
+	// The entry cache is a context-wide singleton; clear it so every test starts cold.
+	@Autowired
+	EntryCache entryCache;
+
 	@AfterAll
 	static void stopMockApi() {
 		mockApi.close();
@@ -41,6 +46,7 @@ class LlmsControllerTests {
 	@BeforeEach
 	void resetMockApi() {
 		mockApi.reset();
+		this.entryCache.clear();
 	}
 
 	@Test

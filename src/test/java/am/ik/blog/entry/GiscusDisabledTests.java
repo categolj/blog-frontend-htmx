@@ -32,6 +32,10 @@ class GiscusDisabledTests {
 	@Autowired
 	RestTestClient client;
 
+	// The entry cache is a context-wide singleton; clear it so every test starts cold.
+	@Autowired
+	EntryCache entryCache;
+
 	@AfterAll
 	static void stopMockApi() {
 		mockApi.close();
@@ -45,6 +49,7 @@ class GiscusDisabledTests {
 	@BeforeEach
 	void resetMockApi() {
 		mockApi.reset();
+		this.entryCache.clear();
 	}
 
 	@Test

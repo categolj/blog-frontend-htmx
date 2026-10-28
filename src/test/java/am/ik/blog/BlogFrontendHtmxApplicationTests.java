@@ -1,6 +1,7 @@
 package am.ik.blog;
 
 import am.ik.blog.asset.AssetsVersion;
+import am.ik.blog.entry.EntryCache;
 import am.ik.blog.htmx.HtmxHeaders;
 import am.ik.blog.testsupport.MockServer;
 import java.net.URI;
@@ -73,6 +74,10 @@ class BlogFrontendHtmxApplicationTests {
 	@Autowired
 	RestTestClient client;
 
+	// The entry cache is a context-wide singleton; clear it so every test starts cold.
+	@Autowired
+	EntryCache entryCache;
+
 	@AfterAll
 	static void stopMockApi() {
 		mockApi.close();
@@ -86,6 +91,7 @@ class BlogFrontendHtmxApplicationTests {
 	@BeforeEach
 	void resetMockApi() {
 		mockApi.reset();
+		this.entryCache.clear();
 	}
 
 	@Test
