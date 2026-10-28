@@ -7,16 +7,15 @@ Difficulty: Low — a Sonnet-class model is enough.
 `AppConfig#restClientCustomizer` registers the interceptors in the order
 `[Logbook, Retryable, CircuitBreaker]` (first = outermost). Two problems follow:
 
-1. **Open-state latency**: when the breaker is open,
-   `CircuitBreakerClientHttpRequestInterceptor` throws `CallNotPermittedException`
-   (extends `IOException`). `RetryableClientHttpRequestInterceptor` sits outside it,
-   treats that as a retryable I/O failure, and burns the full back-off
-   (`ExponentialBackOff(1_000, 1.5)`, max elapsed 6s) before letting the exception
-   propagate — every request during an outage pays ~6s for nothing.
-2. **Failure accounting amplification**: the breaker sees one call per retry
-   attempt, so `minimumNumberOfCalls=5` is filled by a single logical request that
-   retries 5 times. A momentary network failure opens the breaker immediately,
-   which defeats the sliding-window design (`slidingWindowSize=20`).
+1. **Failure accounting amplification** (the real defect, confirmed by test): the
+   breaker sees one call per retry attempt, so `minimumNumberOfCalls=5` is filled
+   by a single logical request that retries. A momentary connect failure opens
+   the breaker immediately, defeating the sliding-window design
+   (`slidingWindowSize=20`).
+2. ~~Open-state latency~~ (retracted): the retry interceptor's default
+   `RetryableIOExceptionPredicate` covers only `SocketTimeoutException` /
+   `ConnectException` / `UnknownHostException` — `CallNotPermittedException` is
+   NOT retried, so open-state calls already fail fast even with the old order.
 
 ## Target
 
