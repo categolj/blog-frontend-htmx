@@ -180,20 +180,22 @@ class CachingEntryClientTests {
 	}
 
 	@Test
-	void notFoundIsCachedAsNegativeEntry() {
+	void notFoundIsNotCached() {
+		// A 404 is not evidence about the resource: while upstream is degraded a gateway
+		// can answer 404 for a backend that is merely down. Caching it would keep the
+		// outage's 404 alive after recovery, so every request re-asks upstream.
 		mockApi.stubGetNotFound("/entries/99");
+		for (int i = 0; i < 2; i++) {
+			this.client.get().uri("/entries/99").accept(MediaType.TEXT_HTML).exchange().expectStatus().isNotFound();
+		}
+		assertThat(mockApi.requestCount("GET", "/entries/99")).as("404 answered from upstream each time").isEqualTo(2);
 
-		this.client.get().uri("/entries/99").accept(MediaType.TEXT_HTML).exchange().expectStatus().isNotFound();
-		this.client.get().uri("/entries/99").accept(MediaType.TEXT_HTML).exchange().expectStatus().isNotFound();
-		assertThat(mockApi.requestCount("GET", "/entries/99")).as("404 served from the negative cache").isEqualTo(1);
-
-		// Expired negative entry + upstream outage still answers 404 from the cache.
-		MutableClockConfig.advance(Duration.ofMinutes(10));
+		// Upstream recovers with the entry present: the page renders at once, with no TTL
+		// wait for a cached 404 to expire.
 		mockApi.reset();
-		mockApi.stubGet("/entries/99", 500, "upstream down", "application/json");
-		this.client.get().uri("/entries/99").accept(MediaType.TEXT_HTML).exchange().expectStatus().isNotFound();
-		assertThat(mockApi.requestCount("GET", "/entries/99")).as("one upstream refresh, then stale negative")
-			.isEqualTo(1);
+		mockApi.stubGetJson("/entries/99", entryJson("Recovered Entry"));
+		Document doc = parsePage("/entries/99");
+		assertThat(requireSelected(doc, "h1.entry-title").text()).isEqualTo("Recovered Entry");
 	}
 
 	@Test

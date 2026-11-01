@@ -50,11 +50,12 @@ public class EntryCache {
 	}
 
 	/**
-	 * Caches the value under the key. Negative results (cached 404s) get the short
-	 * negative TTL so a since-published entry becomes visible quickly.
+	 * Caches a successful result under the key. Only values that describe an existing
+	 * resource are stored — see {@link CachingEntryClient} for why not-found responses
+	 * are kept out.
 	 */
-	public <T> void put(Key key, T value, boolean negative) {
-		Duration ttl = negative ? this.props.negative() : this.ttlFor(key.operation());
+	public <T> void put(Key key, T value) {
+		Duration ttl = this.ttlFor(key.operation());
 		this.cache.put(key, new Cached<>(value, this.instantSource.instant(), ttl));
 	}
 

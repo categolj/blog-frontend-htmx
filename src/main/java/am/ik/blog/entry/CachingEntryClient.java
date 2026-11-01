@@ -25,6 +25,13 @@ import org.springframework.web.client.ResourceAccessException;
  * Other 4xx responses are data errors, not outages — they propagate untouched.
  *
  * <p>
+ * Only successful responses are cached. A not-found result is never stored: a 404 handed
+ * back while upstream is degraded (a gateway answering for a down backend, for example)
+ * says nothing about the resource, so caching it would keep serving the outage's 404
+ * after recovery until the entry expired — and it would also evict real entries that the
+ * stale-on-error fallback depends on. Upstream failures stay a circuit-breaker concern.
+ *
+ * <p>
  * All controllers and feed/sitemap/llms renderers depend on the {@link EntryClient} type;
  * declaring this subclass as {@code @Primary} routes every call through the cache without
  * touching any call site. The delegate's {@link RestClient} is handed to {@code super} so
@@ -52,31 +59,31 @@ public class CachingEntryClient extends EntryClient {
 	@Override
 	public CursorPage<Entry> findEntries(EntryQuery query, @Nullable String tenantId) {
 		Key key = new Key(tenantId, "list", canonicalListQuery(query));
-		return this.readThrough(key, "list", () -> super.findEntries(query, tenantId), value -> false);
+		return this.readThrough(key, "list", () -> super.findEntries(query, tenantId), value -> true);
 	}
 
 	@Override
 	public Optional<Entry> findById(Long entryId, @Nullable String tenantId) {
 		Key key = new Key(tenantId, "detail", entryId.toString());
-		return this.readThrough(key, "detail", () -> super.findById(entryId, tenantId), Optional::isEmpty);
+		return this.readThrough(key, "detail", () -> super.findById(entryId, tenantId), Optional::isPresent);
 	}
 
 	@Override
 	public Optional<String> findMarkdownById(Long entryId, @Nullable String tenantId) {
 		Key key = new Key(tenantId, "markdown", entryId.toString());
-		return this.readThrough(key, "markdown", () -> super.findMarkdownById(entryId, tenantId), Optional::isEmpty);
+		return this.readThrough(key, "markdown", () -> super.findMarkdownById(entryId, tenantId), Optional::isPresent);
 	}
 
 	@Override
 	public List<TagAndCount> findAllTags(@Nullable String tenantId) {
 		Key key = new Key(tenantId, "tags", "");
-		return this.readThrough(key, "tags", () -> super.findAllTags(tenantId), value -> false);
+		return this.readThrough(key, "tags", () -> super.findAllTags(tenantId), value -> true);
 	}
 
 	@Override
 	public List<List<Category>> findAllCategories(@Nullable String tenantId) {
 		Key key = new Key(tenantId, "categories", "");
-		return this.readThrough(key, "categories", () -> super.findAllCategories(tenantId), value -> false);
+		return this.readThrough(key, "categories", () -> super.findAllCategories(tenantId), value -> true);
 	}
 
 	/**
@@ -97,20 +104,26 @@ public class CachingEntryClient extends EntryClient {
 	}
 
 	/**
-	 * Cache hit within the TTL returns immediately; otherwise the value is loaded and
-	 * stored. On an upstream failure the expired entry (if any) is served stale.
+	 * Cache hit within the TTL returns immediately; otherwise the value is loaded and,
+	 * when {@code cacheable} accepts it, stored. On an upstream failure the expired entry
+	 * (if any) is served stale.
 	 */
-	private <T> T readThrough(Key key, String op, Supplier<T> loader, Predicate<T> negative) {
-		Cached<T> fresh = this.cache.<T>get(key).orElse(null);
-		if (fresh != null) {
-			this.increment(op, negative.test(fresh.value()) ? "negative" : "fresh");
-			return fresh.value();
+	private <T> T readThrough(Key key, String op, Supplier<T> loader, Predicate<T> cacheable) {
+		Cached<T> cached = this.cache.<T>get(key).orElse(null);
+		if (cached != null) {
+			this.increment(op, "fresh");
+			return cached.value();
 		}
 		try {
 			T value = loader.get();
-			boolean negativeResult = negative.test(value);
-			this.cache.put(key, value, negativeResult);
-			this.increment(op, negativeResult ? "negative" : "fresh");
+			if (cacheable.test(value)) {
+				this.cache.put(key, value);
+				this.increment(op, "fresh");
+			}
+			else {
+				// Not found: answered from upstream every time, never stored.
+				this.increment(op, "uncached");
+			}
 			return value;
 		}
 		catch (ResourceAccessException | HttpServerErrorException e) {
