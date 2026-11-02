@@ -111,6 +111,16 @@ content hashes invalidates the cached HTML envelope. Without this, upstream
 would keep reporting 304 for the unchanged entry and clients would hold onto
 HTML pointing at old fingerprinted asset URLs indefinitely.
 
+### Entry cache is an outage fallback, not a TTL cache
+
+`CachingEntryClient` sends every call to upstream and keeps the last successful answer;
+`EntryCache` is read only when upstream fails (I/O error, open breaker, 5xx), and
+then serves that value however old — an outage can last for days. Do not add a TTL that
+answers in place of a healthy upstream: `headEntry` always asks upstream, so the
+conditional check would report an edited entry modified while the full render still
+returned the cached old body and ETag. Not-found answers are never stored, so a gateway
+404 during an outage cannot overwrite the entry the fallback depends on.
+
 ### Feature packages must not depend on `am.ik.blog.config`
 
 `config/` wires up beans from feature packages; depending back the other way

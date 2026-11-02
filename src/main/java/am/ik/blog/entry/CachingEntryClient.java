@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import am.ik.blog.entry.EntryCache.Cached;
 import am.ik.blog.entry.EntryCache.Key;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.jspecify.annotations.Nullable;
@@ -19,17 +18,23 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 /**
- * Read-through cache in front of {@link EntryClient} with a stale-on-error fallback: when
- * upstream is unavailable (open breaker fast-fail, timeout, 5xx) the cached value is
- * served even if past its TTL, and a missing cache entry rethrows the upstream failure.
- * Other 4xx responses are data errors, not outages — they propagate untouched.
+ * Stale-on-error fallback in front of {@link EntryClient}: every call goes to upstream,
+ * and each successful answer is kept as the last known good value. When upstream is
+ * unavailable (open breaker fast-fail, timeout, 5xx) that value is served however old it
+ * is; with nothing stored the upstream failure is rethrown. Other 4xx responses are data
+ * errors, not outages — they propagate untouched.
+ *
+ * <p>
+ * The store is deliberately not a TTL cache answering in place of a healthy upstream: an
+ * edited entry would otherwise keep rendering its old body while
+ * {@link #headEntry(Long, Instant, String)}, which always asks upstream, already reports
+ * it modified.
  *
  * <p>
  * Only successful responses are cached. A not-found result is never stored: a 404 handed
  * back while upstream is degraded (a gateway answering for a down backend, for example)
- * says nothing about the resource, so caching it would keep serving the outage's 404
- * after recovery until the entry expired — and it would also evict real entries that the
- * stale-on-error fallback depends on. Upstream failures stay a circuit-breaker concern.
+ * says nothing about the resource, so storing it would overwrite the real entry the
+ * fallback depends on. Upstream failures stay a circuit-breaker concern.
  *
  * <p>
  * All controllers and feed/sitemap/llms renderers depend on the {@link EntryClient} type;
@@ -104,16 +109,10 @@ public class CachingEntryClient extends EntryClient {
 	}
 
 	/**
-	 * Cache hit within the TTL returns immediately; otherwise the value is loaded and,
-	 * when {@code cacheable} accepts it, stored. On an upstream failure the expired entry
-	 * (if any) is served stale.
+	 * Loads the value from upstream and, when {@code cacheable} accepts it, stores it as
+	 * the fallback. On an upstream failure the stored value (if any) is served instead.
 	 */
 	private <T> T readThrough(Key key, String op, Supplier<T> loader, Predicate<T> cacheable) {
-		Cached<T> cached = this.cache.<T>get(key).orElse(null);
-		if (cached != null) {
-			this.increment(op, "fresh");
-			return cached.value();
-		}
 		try {
 			T value = loader.get();
 			if (cacheable.test(value)) {
@@ -121,7 +120,7 @@ public class CachingEntryClient extends EntryClient {
 				this.increment(op, "fresh");
 			}
 			else {
-				// Not found: answered from upstream every time, never stored.
+				// Not found: never stored.
 				this.increment(op, "uncached");
 			}
 			return value;
@@ -129,10 +128,10 @@ public class CachingEntryClient extends EntryClient {
 		catch (ResourceAccessException | HttpServerErrorException e) {
 			// ResourceAccessException covers both real I/O failures and the open-breaker
 			// CallNotPermittedException, which RestClient wraps as an I/O error.
-			Cached<T> stale = this.cache.<T>getStale(key).orElse(null);
+			T stale = this.cache.<T>get(key).orElse(null);
 			if (stale != null) {
 				this.increment(op, "stale");
-				return stale.value();
+				return stale;
 			}
 			this.increment(op, "miss");
 			throw e;

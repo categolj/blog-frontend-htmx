@@ -1,12 +1,9 @@
 package am.ik.blog.entry;
 
-import java.time.Duration;
 import java.time.Instant;
-import java.time.InstantSource;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
 
 import am.ik.blog.testsupport.MockServer;
 import am.ik.spring.http.client.circuitbreaker.CircuitBreaker;
@@ -21,10 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -35,34 +28,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for {@link CachingEntryClient}. The upstream Blog API is stubbed at
- * the HTTP layer via {@link MockServer}; a mutable {@link InstantSource} lets tests
- * expire cache TTLs deterministically without sleeping.
+ * the HTTP layer via {@link MockServer}.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureRestTestClient
-@Import(CachingEntryClientTests.MutableClockConfig.class)
 class CachingEntryClientTests {
-
-	@TestConfiguration
-	static class MutableClockConfig {
-
-		private static final AtomicReference<Instant> NOW = new AtomicReference<>(Instant.now());
-
-		@Bean
-		@Primary
-		InstantSource testInstantSource() {
-			return NOW::get;
-		}
-
-		static void advance(Duration duration) {
-			NOW.updateAndGet(now -> now.plus(duration));
-		}
-
-		static void reset() {
-			NOW.set(Instant.now());
-		}
-
-	}
 
 	// Started eagerly so its baseUrl() is available when @DynamicPropertySource fires.
 	private static final MockServer mockApi = MockServer.start();
@@ -94,34 +64,30 @@ class CachingEntryClientTests {
 		mockApi.reset();
 		this.entryCache.clear();
 		this.circuitBreakerRegistry.circuitBreakers().forEach(CircuitBreaker::reset);
-		MutableClockConfig.reset();
 	}
 
 	@Test
-	void successResponsesAreCachedWithinTtl() {
-		mockApi.stubGetJson("/entries", entriesJson("Cached List Entry"));
-		mockApi.stubGetJson("/entries/42", entryJson("Cached Detail Entry"));
+	void healthyUpstreamIsAskedOnEveryRequest() {
+		mockApi.stubGetJson("/entries", entriesJson("Old Title"));
+		mockApi.stubGetJson("/entries/42", entryJson("Old Title"));
+		parsePage("/");
+		parsePage("/entries/42");
 
-		for (int i = 0; i < 2; i++) {
-			Document doc = parsePage("/");
-			assertThat(requireSelected(doc, "article.entry-card a[href=/entries/42]").text())
-				.isEqualTo("Cached List Entry");
-		}
-		assertThat(mockApi.requestCount("GET", "/entries?size=20")).as("list served from cache").isEqualTo(1);
+		// Upstream changes right away: the stored values must not stand in for it.
+		mockApi.reset();
+		mockApi.stubGetJson("/entries", entriesJson("New Title"));
+		mockApi.stubGetJson("/entries/42", entryJson("New Title"));
 
-		for (int i = 0; i < 2; i++) {
-			Document doc = parsePage("/entries/42");
-			assertThat(requireSelected(doc, "h1.entry-title").text()).isEqualTo("Cached Detail Entry");
-		}
-		assertThat(mockApi.requestCount("GET", "/entries/42")).as("detail served from cache").isEqualTo(1);
-
-		assertThat(this.meterRegistry.find("blog.entry.cache").tags("op", "list", "result", "fresh").counter())
-			.as("cache outcomes are observed via Micrometer")
-			.isNotNull();
+		Document list = parsePage("/");
+		assertThat(requireSelected(list, "article.entry-card a[href=/entries/42]").text()).isEqualTo("New Title");
+		Document detail = parsePage("/entries/42");
+		assertThat(requireSelected(detail, "h1.entry-title").text()).isEqualTo("New Title");
+		assertThat(mockApi.requestCount("GET", "/entries?size=20")).isEqualTo(1);
+		assertThat(mockApi.requestCount("GET", "/entries/42")).isEqualTo(1);
 	}
 
 	@Test
-	void expiredCacheIsServedWhileUpstreamIsDown() {
+	void storedValueIsServedWhileUpstreamIsDown() {
 		// Prime every cached operation while upstream is healthy.
 		mockApi.stubGetJson("/entries", entriesJson("Cached List Entry"));
 		mockApi.stubGetJson("/entries/42", entryJson("Cached Detail Entry"));
@@ -132,8 +98,6 @@ class CachingEntryClientTests {
 		fetchMarkdown();
 		parsePage("/tags");
 
-		// Expire every TTL and take the upstream down.
-		MutableClockConfig.advance(Duration.ofHours(2));
 		mockApi.reset();
 		mockApi.stubGet("/entries", 500, "upstream down", "application/json");
 		mockApi.stubGet("/entries/42", 500, "upstream down", "application/json");
@@ -146,10 +110,9 @@ class CachingEntryClientTests {
 		Document detail = parsePage("/entries/42");
 		assertThat(requireSelected(detail, "h1.entry-title").text()).isEqualTo("Cached Detail Entry");
 		assertThat(fetchMarkdown()).isEqualTo("# Cached Markdown");
-		parsePage("/tags");
 		assertThat(requireSelected(parsePage("/tags"), "a[href=\"/tags/Cached%20Tag/entries\"]")).isNotNull();
 
-		// Each operation attempted exactly one upstream refresh before falling back.
+		// Each operation attempted upstream exactly once before falling back.
 		assertThat(mockApi.requestCount("GET", "/entries?size=20")).isEqualTo(1);
 		assertThat(mockApi.requestCount("GET", "/entries/42")).isEqualTo(1);
 		assertThat(mockApi.requestCount("GET", "/entries/42.md")).isEqualTo(1);
@@ -170,6 +133,10 @@ class CachingEntryClientTests {
 			.returnResult()
 			.getResponseBody();
 		assertThat(conditional).contains("Cached Detail Entry");
+
+		assertThat(this.meterRegistry.find("blog.entry.cache").tags("op", "list", "result", "stale").counter())
+			.as("fallback outcomes are observed via Micrometer")
+			.isNotNull();
 	}
 
 	@Test
@@ -180,22 +147,21 @@ class CachingEntryClientTests {
 	}
 
 	@Test
-	void notFoundIsNotCached() {
-		// A 404 is not evidence about the resource: while upstream is degraded a gateway
-		// can answer 404 for a backend that is merely down. Caching it would keep the
-		// outage's 404 alive after recovery, so every request re-asks upstream.
-		mockApi.stubGetNotFound("/entries/99");
-		for (int i = 0; i < 2; i++) {
-			this.client.get().uri("/entries/99").accept(MediaType.TEXT_HTML).exchange().expectStatus().isNotFound();
-		}
-		assertThat(mockApi.requestCount("GET", "/entries/99")).as("404 answered from upstream each time").isEqualTo(2);
+	void notFoundDoesNotOverwriteStoredValue() {
+		mockApi.stubGetJson("/entries/42", entryJson("Stored Entry"));
+		parsePage("/entries/42");
 
-		// Upstream recovers with the entry present: the page renders at once, with no TTL
-		// wait for a cached 404 to expire.
+		// A 404 is not evidence about the resource: while upstream is degraded a gateway
+		// can answer 404 for a backend that is merely down. It is passed through, but
+		// storing it would replace the entry the fallback depends on.
 		mockApi.reset();
-		mockApi.stubGetJson("/entries/99", entryJson("Recovered Entry"));
-		Document doc = parsePage("/entries/99");
-		assertThat(requireSelected(doc, "h1.entry-title").text()).isEqualTo("Recovered Entry");
+		mockApi.stubGetNotFound("/entries/42");
+		this.client.get().uri("/entries/42").accept(MediaType.TEXT_HTML).exchange().expectStatus().isNotFound();
+
+		mockApi.reset();
+		mockApi.stubGet("/entries/42", 500, "upstream down", "application/json");
+		Document doc = parsePage("/entries/42");
+		assertThat(requireSelected(doc, "h1.entry-title").text()).isEqualTo("Stored Entry");
 	}
 
 	@Test
@@ -203,7 +169,6 @@ class CachingEntryClientTests {
 		mockApi.stubGetJson("/entries", entriesJson("Cached List Entry"));
 		parsePage("/");
 
-		MutableClockConfig.advance(Duration.ofMinutes(2));
 		mockApi.reset();
 		this.circuitBreakerRegistry.circuitBreaker("127.0.0.1").transitionToOpen();
 
@@ -212,21 +177,6 @@ class CachingEntryClientTests {
 			.isEqualTo("Cached List Entry");
 		assertThat(mockApi.requestCount("GET", "/entries?size=20")).as("open breaker rejects without touching upstream")
 			.isZero();
-	}
-
-	@Test
-	void recoveredUpstreamServesFreshDataAfterTtlExpiry() {
-		mockApi.stubGetJson("/entries", entriesJson("Old Title"));
-		parsePage("/");
-
-		// Expire the list TTL, then restore upstream with new content.
-		MutableClockConfig.advance(Duration.ofMinutes(2));
-		mockApi.reset();
-		mockApi.stubGetJson("/entries", entriesJson("New Title"));
-
-		Document doc = parsePage("/");
-		assertThat(requireSelected(doc, "article.entry-card a[href=/entries/42]").text()).isEqualTo("New Title");
-		assertThat(mockApi.requestCount("GET", "/entries?size=20")).isEqualTo(1);
 	}
 
 	private Document parsePage(String path) {
