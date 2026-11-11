@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
@@ -26,7 +27,11 @@ public class CounterClient {
 	private final RestClient restClient;
 
 	public CounterClient(RestClient.Builder restClientBuilder, CounterApiProps props) {
-		this.restClient = restClientBuilder.baseUrl(props.baseUrl()).build();
+		RestClient.Builder builder = restClientBuilder.baseUrl(props.baseUrl());
+		if (StringUtils.hasText(props.accessToken())) {
+			builder = builder.defaultHeaders(headers -> headers.setBearerAuth(props.accessToken()));
+		}
+		this.restClient = builder.build();
 	}
 
 	public Counter increment(IncrementRequest request) {

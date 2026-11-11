@@ -48,6 +48,7 @@ class CounterControllerTests {
 	@DynamicPropertySource
 	static void registerProps(DynamicPropertyRegistry registry) {
 		registry.add("counter.api.base-url", counterApi::baseUrl);
+		registry.add("counter.api.access-token", () -> "test-token");
 		registry.add("counter.api.ip-black-list[0]", () -> BLACKLIST_IP);
 		// The main Blog API is not touched by these tests but must resolve at boot.
 		registry.add("blog.api.base-url", blogApi::baseUrl);
@@ -70,6 +71,7 @@ class CounterControllerTests {
 		assertThat(requireSelect(span, ".views-label").text()).isEqualTo("Views");
 		assertThat(counterApi.requestCount("POST", "/counter")).isEqualTo(1);
 		assertThat(counterApi.requestCount("POST", "/counter?readOnly=true")).isZero();
+		assertThat(counterApi.lastAuthorizationFor("/counter")).isEqualTo("Bearer test-token");
 	}
 
 	@Test
